@@ -1,9 +1,11 @@
 package org.calm4.quotes
 
+import java.nio.file.Files
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.stream.{ActorMaterializer, IOResult}
-import akka.stream.scaladsl.FileIO
+import akka.stream.{ActorMaterializer, ActorMaterializerSettings, IOResult, Supervision}
+import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.model.Document
@@ -17,10 +19,20 @@ object Calm4 {
   import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
   import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 
-  case class Applicant(name: String, familyName: String, occupation: String)
+  import Utils._
+
+
+  case class Applicant(id: String, name: String = "", familyName: String = "", occupation: String)
 
   implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  //implicit val materializer = ActorMaterializer()
+
+  val decider: Supervision.Decider = {
+    case x => Supervision.Resume.traceWith(_ => x)
+  }
+  implicit val materializer = ActorMaterializer(
+    ActorMaterializerSettings(system).withSupervisionStrategy(decider))
+
   implicit val ec = ExecutionContext.global
 
   import akka.actor.ActorSystem
@@ -31,7 +43,10 @@ object Calm4 {
   val host = "https://calm.dhamma.org"
   val browser = JsoupBrowser()
 
-  def parseApplicant(html: Document) = ???
+  def parseApplicant(html: Document) = Applicant(
+    occupation = html >> attr("value")("input[id=course_application_occupation]"),
+    id = html >> attr("value")("input[id=course_application_display_id]"))
+
   def parseApplicantList(path: String) =
     (browser.parseFile(path) >> elementList("a[id=edit-app-link]"))
       .map(_ >> attr("href") )
@@ -42,23 +57,34 @@ object Calm4 {
 
   def sessionId = scala.io.Source.fromFile("data/sessionId").mkString
   def cookie = RawHeader("cookie", s"_session_id=${sessionId}")
-  def getAppId(url: String) = url.split("/").lift(5)
-  def savePage(url: String, filePath: String): Future[IOResult] = {
+  def getAppId(url: String): Option[String] = url.split("/").lift(5)
+  def savePage(url: String, filePath: String): Future[String] = {
     val request = HttpRequest(uri = url).addHeader(cookie)
     Http().singleRequest(request.addHeader(cookie))
     .flatMap(
       _.entity.dataBytes.runWith(FileIO.toPath(Paths.get(filePath))))
+    .map(_ => filePath)
       //_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _))
 
   }//.map(FileIO.toPath(filePath))
 
   def getAppUrls(courseUrl: String) = Http().singleRequest(
-    HttpRequest(uri = courseUrl).addHeader(cookie)
+    HttpRequest(uri = courseUrl.trace).addHeader(cookie)
   ).flatMap(responce => responce.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
-  .map(x => parseApplicantList(browser.parseString(x.utf8String)))
+  .map(x => parseApplicantList(browser.parseString(x.utf8String.trace)))
 
-//  def loadAndSaveApps(courseUrl: String) =
-//    val a = getAppUrls(courseUrl)
+  def loadAndSaveApps(courseUrl: String) =
+    Source.fromFuture( getAppUrls(courseUrl).map(_.traceWith(_.length)) ).mapConcat[String](x => x)
+      .map( x => (host + x, s"data/test/${getAppId(x).get}.html" ) )
+
+      .mapAsync(4)(x =>
+        if(!Files.exists(Paths.get(x._2))) savePage(x._1, x._2 )
+        else Future.successful(x._2)
+        .map(browser.parseFile)
+        .map(doc => parseApplicant(doc).traceWith(x => s"${x.id}, ${x.occupation}" ))
+      )
+  .runWith(Sink.ignore)
+      //.map(x => getAppId(x).map( id => savePage(host + x, id) ))
 
 }
 
@@ -71,25 +97,15 @@ object Sandbox extends App{
   import Utils._
 
 
-  //Success(1)
-  //Failure("")
-  //Some(1).flatMap(x => x * 2)
-  List[Int]().flatMap(x => List(x,x*2,x*3) )
-  None.flatMap(x => Some(2) )
-  Future.successful(100).map(x => 200)
-  Future.successful(100).flatMap(x => Future.never)
-  .onComplete(_ => println(""))
-
-  Success(1).toOption.toList
-  Failure(new Exception("Error")).toOption.toList
-
 //  savePage(appsUrl, appListPath )
 //    .onComplete(_ => system.terminate().traceWith(_ => "Done!"))
 
-  parseApplicantList("data/test/apps.html").traceWith(_.mkString("\n"))
-  .map(getAppId(_).trace)
+//  parseApplicantList("data/test/apps.html").traceWith(_.mkString("\n"))
+//  .map(getAppId(_).trace)
 
-  system.terminate()
+  loadAndSaveApps(appsUrl).onComplete(_ => system.terminate().traceWith(_ => "Done!"))
+
+  //system.terminate()
 
 
 }
