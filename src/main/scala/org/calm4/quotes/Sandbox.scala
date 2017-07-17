@@ -71,7 +71,7 @@ object Calm4 {
   def getAppUrls(courseUrl: String) = Http().singleRequest(
     HttpRequest(uri = courseUrl.trace).addHeader(cookie)
   ).flatMap(responce => responce.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
-  .map(x => parseApplicantList(browser.parseString(x.utf8String.trace)))
+  .map(x => parseApplicantList(browser.parseString(x.utf8String)))
 
   def loadAndSaveApps(courseUrl: String) =
     Source.fromFuture( getAppUrls(courseUrl).map(_.traceWith(_.length)) ).mapConcat[String](x => x)
@@ -92,7 +92,8 @@ object Sandbox extends App{
   def testAppList = ???
   val appListPath = "data/test/apps.html"
   val appFile = "data/test/appExample.html"
-  val appsUrl = "https://calm.dhamma.org/en/courses/2478/course_applications"
+  //val appsUrl = "https://calm.dhamma.org/en/courses/2478/course_applications"
+  val appsUrl = "https://calm.dhamma.org/en/courses/2481/course_applications"
   import Calm4._
   import Utils._
 
