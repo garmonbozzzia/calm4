@@ -11,4 +11,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.3" % Test
 )
 
-        
+libraryDependencies += "info.mukel" %% "telegrambot4s" % "3.0.8"
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.6.4"
+libraryDependencies += "org.json4s" %% "json4s-native" % "3.5.3"
+libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.5.3"
+libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.4.4"
