@@ -1,40 +1,37 @@
 package org.calm4.quotes
 
-import akka.actor.{ActorSystem}
+import java.nio.file.Paths
+
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.stream.actor.ActorPublisherMessage.Request
+import akka.http.scaladsl.model.{HttpHeader, Uri, _}
 import akka.stream.scaladsl.FileIO
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}
 import akka.util.ByteString
-import fastparse.all.P
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
-import net.ruippeixotog.scalascraper.model.Document
-import org.calm4.quotes.Calm4.browser
-import org.calm4.quotes.Inbox.InboxEntity
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import net.ruippeixotog.scalascraper.model.Document
+import org.calm4.quotes.CalmModel2.ApplicantRecord
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
 object Calm4 {
   import Utils._
 
-
   implicit val system = ActorSystem()
-  //implicit val materializer = ActorMaterializer()
+  implicit val ord: Ordering[ApplicantRecord] = ApplicantRecordOrd
 
+  //implicit val materializer = ActorMaterializer()
   val decider: Supervision.Decider = x => Supervision.Resume.traceWith(_ => x)
   implicit val materializer = ActorMaterializer(
     ActorMaterializerSettings(system).withSupervisionStrategy(decider))
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
-  import java.nio.file.Paths
-
-  import akka.http.scaladsl.Http
-  import akka.http.scaladsl.model._
 
   val host = "https://calm.dhamma.org"
   val browser = JsoupBrowser()
@@ -57,7 +54,7 @@ object Calm4 {
   //def provinceExtractor(implicit html: Document) = html >> attr("value")("input[id=course_application_contact_province]")
   def townExtractor(implicit html: Document) = html >> attr("value")("input[id=course_application_contact_town]")
   def idExtractor(implicit html: Document) = html >> attr("value")("input[id=course_application_display_id]")
-  def parseApplicant(implicit html: Document) = Applicant(
+  def parseApplicant(implicit html: Document) = Applicant_(
     name = givenNameExtractor,
     familyName = familyNameExtractor,
     occupation = occupationExtractor,
@@ -83,11 +80,14 @@ object Calm4 {
     } yield filePath
 
   val accept = RawHeader("Accept", "application/json, text/javascript, */*; q=0.01")
+  //val xcsrf = RawHeader("X-CSRF-Token", "EjeyVBeVMKOsi2SQpBXIiiztkK4vhjkP9FpUIdTDRnQ=")
   val xml = RawHeader("X-Requested-With", "XmlHttpRequest")
+  val referer = RawHeader("Referer","")
   def savePage2(url: Uri, filePath: String): Future[String] = for{
     responce <- Http().singleRequest(HttpRequest(uri = url)
         .addHeader(accept)
         .addHeader(xml)
+        .addHeader(referer)
       .addHeader(cookie))
     _ <- responce.entity.dataBytes.runWith(FileIO.toPath(Paths.get(filePath)))
   } yield filePath
@@ -98,121 +98,42 @@ object Calm4 {
     .map(x => x.utf8String)
     .map(browser.parseString)
 
-
   implicit val formats = DefaultFormats
+  //case class DataJson(draw: Int, data: List[List[String]], recordsTotal: Int, recordsFiltered: Int)
+  case class DataJson(data: List[List[String]])
 
-  def loadJson(link: String): Future[JValue] = Http().singleRequest(
-    HttpRequest(uri = link).addHeader(cookie).addHeader(xml).addHeader(accept)
+  def loadJson(link: String): Future[DataJson] = Http().singleRequest(
+    HttpRequest(uri = link).addHeader(cookie).addHeader(xml).addHeader(accept).addHeader(referer)
   ).flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
-    .map(x => parse(x.utf8String.trace))
+    .map(x => parse(x.utf8String.trace).extract[DataJson])
 
   import akka.http.scaladsl.model.Uri
-  def loadJson(uri: Uri): Future[JValue] = Http().singleRequest(
-    HttpRequest(uri = uri).addHeader(cookie).addHeader(xml).addHeader(accept)
+  def loadJson_(uri: Uri, headers: Seq[HttpHeader]): Future[DataJson] =  Http().singleRequest(
+    headers.foldLeft(HttpRequest(uri = uri.trace))(_ addHeader _).addHeader(cookie))
+      .flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
+      .map(x => parse(x.utf8String.trace).extract[DataJson])
+
+  def loadJson_(uri: Uri): Future[DataJson] = Http().singleRequest(
+    HttpRequest(uri = uri)
+      //.addHeaders(TestSearchUri.hs.toArray)
+      .addHeader(cookie).addHeader(xml).addHeader(accept).addHeader(referer)
   ).flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
-    .map(x => parse(x.utf8String.trace))
+    .map(x => parse(x.utf8String.trace).extract[DataJson])
+
+  def loadJson(uri: Uri, headers: Seq[HttpHeader]): Future[String] =  Http().singleRequest(
+    headers.foldLeft(HttpRequest(uri = uri.traceWith(_.path)))(_ addHeader _).addHeader(cookie))
+    .flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
+    .map(x => x.utf8String.trace)
+
+  def loadJson(uri: Uri): Future[String] = Http().singleRequest(
+    HttpRequest(uri = uri.traceWith(_.path))
+      //.addHeaders(TestSearchUri.hs.toArray)
+      .addHeader(cookie).addHeader(xml).addHeader(accept).addHeader(referer)
+  ).flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
+    .map(x => x.utf8String.trace)
+
 
   def getAppUrls(courseUrl: String): Future[List[String]] = loadPage(courseUrl).map(parseApplicantList)
 
   //.map(x => getAppId(x).map( id => savePage(host + x, id) ))
-}
-
-object CalmModel {
-
-  type Id = Int
-  case class Participant(id: Id, courseId: Id)
-
-  trait CalmRequest
-  case class GetCourseList() extends CalmRequest
-  case class GetInbox() extends CalmRequest
-  case class GetCourse(id: Id ) extends CalmRequest
-  case class GetParticipant(id: Id , courseId: Id ) extends CalmRequest
-  case class GetMessage(id: Id , participantId: Id ) extends CalmRequest
-  case class GetReflist(participantId: Id) extends CalmRequest
-  case class GetConversation(participantId: Id) extends CalmRequest
-  case class GetSearchResult(search: String) extends CalmRequest
-
-  trait CalmResponse
-  case class CalmHtml(document: Document) extends CalmResponse
-  case class CalmJson(json: JValue) extends CalmResponse
-  case class InboxData(json: JValue) extends CalmResponse {
-  }
-
-  class InboxRecord(data: List[String]) {
-    import fastparse.all._
-    val id = P( CharIn('0'to'9').rep(1).!.map(_.toInt) )
-    val participantParser = P("https://calm.dhamma.org".? ~ "/en/courses/" ~ id ~"/course_applications/" ~ id)
-      .map(x => Participant(x._1, x._2))
-    val messageParser = P("https://calm.dhamma.org".? ~ "/en/course_applications/" ~ id ~ "/messages/" ~ id)
-    def extractId(data: String): Option[Participant] = {
-      participantParser.parse(data) match {
-        case Parsed.Success(r, _) => Some(r)
-        case _ => None
-      }
-    }
-
-    private lazy val d0 = data.lift(0).map(browser.parseString)
-    lazy val link: Option[String] = d0 >> attr("href")("a")
-    lazy val participant = link.flatMap(extractId)
-    lazy val messageType = d0 >> text("a")
-    lazy val received = data.lift(1)
-    lazy val name = data.lift(2)
-    lazy val gender = data.lift(3)
-    lazy val participationType = data.lift(4).map(browser.parseString) >> text
-    lazy val courseStart = data.lift(5)
-    lazy val courseEnd = data.lift(6)
-    lazy val venue = data.lift(7)
-    lazy val language = data.lift(8)
-  }
-
-
-  import Calm4._
-  def load: CalmRequest => Future[CalmResponse] = {
-    case GetCourse(id) => loadPage(s"https://calm.dhamma.org/en/courses/$id/course_applications").map(CalmHtml)
-    case GetParticipant(id, courseId) =>
-      loadPage(s"https://calm.dhamma.org/en/courses/$courseId/course_applications/$id/edit").map(CalmHtml)
-    case GetInbox() => loadJson(InboxUri.uri).map(CalmJson)
-  }
-}
-
-object CalmModelTest extends App {
-  import CalmModel._
-  import Utils._
-  import Calm4._
-  //load(GetCourse(2479.toString)).onComplete(_.trace)
-
-  def extractLink(data: List[String]): Option[InboxEntity] =
-    if (data.length != 9) None
-    else {
-      val d1 = browser.parseString(data(0))
-      val d2 = browser.parseString(data(4))
-      import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-      import net.ruippeixotog.scalascraper.dsl.DSL._
-      Some(InboxEntity(link = d1 >> element("a") >> attr("href"), name = data(1), appType = "-", venue = data(7)))
-    }
-
-
-
-  val l1 = browser.parseString("<a class='category-link' href='/en/courses/2527/course_applications/169275/edit#ref_list'>New</a>")
-  val res: String = l1 >> attr("href")("a")
-  val res2 = l1 >> text("a")
-  res.trace
-  res2.trace
-
-  import org.json4s.Xml.{toJson, toXml}
-
-
-
-
-  val p1 = List(
-    "<a class='category-link' href='/en/courses/2535/course_applications/168127/edit#ref_list'>New</a>",
-    "2017-08-19",
-    "Артем Микрюков",
-    "M",
-    "<span title='new student'>NEW<span>",
-    "2017-10-11",
-    "2017-10-22",
-    "Saint Petersburg",
-    "Russian"
-  )
 }

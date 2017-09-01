@@ -6,97 +6,131 @@ import java.nio.file.{Files, Paths}
 import akka.stream.scaladsl.Source
 import info.mukel.telegrambot4s.api.{Extractors, Polling, TelegramBot}
 import info.mukel.telegrambot4s.api.declarative._
-import info.mukel.telegrambot4s.methods.{EditMessageReplyMarkup, EditMessageText, ParseMode}
-import info.mukel.telegrambot4s.models.{InlineKeyboardButton, InlineKeyboardMarkup}
-import org.calm4.quotes.CalmModel.{CalmJson, GetInbox, InboxRecord, load}
+import info.mukel.telegrambot4s.methods.{AnswerInlineQuery, EditMessageReplyMarkup, EditMessageText, ParseMode}
+import info.mukel.telegrambot4s.models._
+import org.calm4.quotes.CalmModel._
 
 /**
   * Created by yuri on 25.08.17.
   */
+
 import Utils._
 import Calm4._
-object CalmBot extends TelegramBot with Polling with Commands with Callbacks{
+
+
+
+object CalmBot extends TelegramBot
+  with Polling
+  with Commands
+  with Callbacks
+  with InlineQueries {
   // Use 'def' or 'lazy val' for the token, using a plain 'val' may/will
   // lead to initialization order issues.
   // Fetch the token from an environment variable or untracked file.
 
   def token = "418829147:AAHvnI1_RePHOrYSovqO7zMzOad2wENwwT4"
 
-  val a = InlineKeyboardButton.callbackData("a", "ButtonTest")
-  val b = InlineKeyboardButton.callbackData("b", "ButtonTest")
-  val c = InlineKeyboardButton.callbackData("c", "ButtonTest")
-  val d = InlineKeyboardButton.callbackData("d", "ButtonTest")
-  val e = InlineKeyboardButton.callbackData("e", "ButtonTest")
-  val f = InlineKeyboardButton.callbackData("f", "ButtonTest")
-  val markup = InlineKeyboardMarkup(Seq(Seq(a, b), Seq(c,d,e)))
+  onInlineQuery { implicit cbq =>
+    cbq.trace
+    load(GetSearchResult(cbq.query)).map { case CalmJson(json) =>
+      json.data.map(x => SearchRecord(x)) }
+      .flatMap { result =>
+        answerInlineQuery(
+          result.zipWithIndex.map(record => InlineQueryResultArticle(
+            record._2.toString,
+            record._1.tmSearchHeader,
+            inputMessageContent = InputTextMessageContent(record._1.tmMessage),
+            description = Some(record._1.tmDescripiton))), switchPmText = Some("text"), switchPmParameter = Some("param")
+        )
+      }
+  }
 
-  onCommand('sessionId) { implicit msg =>
-    withArgs{
-      args =>
-        Files.write(Paths.get(sessionIdFile), args(0).trace.getBytes(StandardCharsets.UTF_8))
-        reply("Session Id saved")
+    onCommand('sessionId) { implicit msg =>
+      withArgs {
+        args =>
+          Files.write(Paths.get(sessionIdFile), args(0).trace.getBytes(StandardCharsets.UTF_8))
+          reply("Session Id saved")
+      }
     }
-  }
 
-  onCommand('apps) { implicit msg =>
-    reply("10")
-    Course.all.head.appRecords.map(_.trace).flatMap(x => reply(x.take(10).map(_.link).mkString("\n")))
-  }
-
-  onCallbackWithTag("ButtonTest") { implicit cbq =>
-    for {
-      data <- cbq.data
-      //Extractors.Int(n) = data
-      msg <- cbq.message
-    } /* do */ {
-      cbq.trace
-      request(
-        EditMessageText(
-          Some(msg.source), // msg.chat.id
-          Some(msg.messageId),
-          parseMode = Some(ParseMode.HTML),
-          text = s"""<b>${System.currentTimeMillis()}</b>, <strong>bold</strong>
-            <i>italic</i>, <em>italic</em>
-            <a href="http://www.example.com/">inline URL</a>
-
-            <code>inline fixed-width code</code>
-            <pre>pre-formatted fixed-width code block</pre>""",
-          replyMarkup = Some(markup)
-        ))
-//        EditMessageReplyMarkup(
-//          Some(msg.source), // msg.chat.id
-//          Some(msg.messageId),
-//          replyMarkup = Some(markup)))
+    onCommand('apps) { implicit msg =>
+      reply("10")
+      Course.all.head.appRecords.map(_.trace).flatMap(x => reply(x.take(10).map(_.link).mkString("\n")))
     }
 
 
-  }
-
-  onCommand('appExample) { implicit msg =>
-    TestData.app1TelegramViewExample.flatMap(x => reply(text = x, parseMode = Some(ParseMode.Markdown)))
-  }
-
-  onCommand('buttons) { implicit msg =>
-
-    reply("msg", replyMarkup = Some(markup))
-  }
-
-  onCommand('inbox) { implicit msg =>
-    def toTelegram(ir: InboxRecord): String = {
-      ir.name.get
+    onCommand('appExample) { implicit msg =>
+      TestData.app1TelegramViewExample.flatMap(x => reply(text = x, parseMode = Some(ParseMode.Markdown)))
     }
 
-    load(GetInbox()).map{
-        case CalmJson(json) => json.extract[Inbox.InboxJson].data
-          .traceWith(_.map(_.mkString("\n")).mkString("\n\n"))
+
+
+    val cache = Map[Long, Participant]()
+    val cache2 = Map[Participant, Long]()
+    onCallbackWithTag("Details") { implicit cbq =>
+      for (msg <- cbq.message) {
+        val Participant(id, cId) = cache(msg.messageId)
+        val newText = load(GetParticipant(id, cId))
+        newText
+          .map {
+            case CalmHtml(html) => "TODO" //html >>
+          }
+          .flatMap(x => request(
+            EditMessageText(
+              chatId = Some(msg.source),
+              messageId = Some(msg.messageId),
+              text = x
+            )
+          ))
+      }
+    }
+
+
+    onCommand('inbox) { implicit msg =>
+      def toTelegram(ir: InboxRecord): String = {
+        s"${
+          ir.messageType.map {
+            case "Reply" => "📧"
+            case "New" => "" //"📨"
+            case x => "❌" + x
+          }.get
+        } *${ir.name.get}* ${
+          ir.participationType.map {
+            case "Server FT" => "⭐"
+            case "OFT" => "🎓"
+            case "NEW" => "" //"⭕"
+            case x => "❌" + x
+          }.get
+        }${
+          ir.gender.map {
+            case "M" => "🚹"
+            case "F" => "🚺"
+            case x => "❌" + x
+          }.get
+        } \nПолучено: ${ir.received.get}\n[Ссылка](https://calm.dhamma.org${ir.link.get})"
+      }
+
+      //:mens::womens::new::o2::recycle:
+
+      val cache = Map[Participant, String]()
+
+      load(GetInbox()).map {
+        case CalmJson(json) => json.data
+          //.traceWith(_.map(_.mkString("\n")).mkString("\n\n"))
           .map(new InboxRecord(_))
           .map(toTelegram)
-      }.foreach(x => x.foreach(y => reply(y)))
+      }.foreach(
+        x => x.foreach(y =>
+          reply(text = y,
+            parseMode = Some(ParseMode.Markdown),
+            replyMarkup = Some(InlineKeyboardMarkup.singleButton(InlineKeyboardButton("Details...", Some("Details"))))
+          ).foreach(_.messageId.trace)
+        )
+      )
+    }
   }
 
-}
-
-object CalmBotApp extends App {
-  CalmBot.run()
-}
+  object CalmBotApp extends App {
+    CalmBot.run()
+  }
 

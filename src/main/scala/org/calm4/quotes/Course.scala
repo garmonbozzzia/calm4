@@ -8,15 +8,15 @@ import scala.concurrent.Future
 
 import Calm4._
 
-case class Applicant(id: String, name: String = "", familyName: String = "",
-                     occupation: String, town: String, province: String)
+case class Applicant_(id: String, name: String = "", familyName: String = "",
+                      occupation: String, town: String, province: String)
 
-case class ApplicantRecord(appId: String, link: String)
+case class ApplicantRecord_(appId: String, link: String)
 
 case class Course(startsAt: String, endsAt: String, link: String){
   def id = link.split("/")(6)
-  def appRecords: Future[List[ApplicantRecord]] =
-    getAppUrls(link).map(_.map(x => ApplicantRecord("", host + x)))
+  def appRecords: Future[List[ApplicantRecord_]] =
+    getAppUrls(link).map(_.map(x => ApplicantRecord_("", host + x)))
   val filename = s"data/courses/$id.html"
   val url = s"$host/ru/$id"
   def save = savePage(link, s"data/courses/$id.html")

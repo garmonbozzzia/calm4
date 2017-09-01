@@ -43,18 +43,14 @@ object CalmApps {
 import Calm4._
 import Utils._
 
-object A extends App {
-  Source(List(ByteString("asd"))).runWith(FileIO.toPath(Paths.get("data/54.txt")))
-}
-
 import Utils._
 object TestData {
   lazy val app1ExampleUri = "https://calm.dhamma.org/en/courses/2528/course_applications/166012/edit"
   lazy val courseExampleUri1 = "https://calm.dhamma.org/en/courses/2528/course_applications"
   lazy val app1ExamplePage = Calm4.loadPage(app1ExampleUri).map(_.trace)
-  lazy val app1Example: Future[Applicant] = app1ExamplePage.map(x => Calm4.parseApplicant(x)).map(_.trace)
+  lazy val app1Example: Future[Applicant_] = app1ExamplePage.map(x => Calm4.parseApplicant(x)).map(_.trace)
 
-  def telegramView(app: Applicant): String = s"*${app.familyName} ${app.name}*\n${app.town} _${app.province}_\n${app.occupation}"
+  def telegramView(app: Applicant_): String = s"*${app.familyName} ${app.name}*\n${app.town} _${app.province}_\n${app.occupation}"
   lazy val app1TelegramViewExample = app1Example.map(telegramView)
 }
 
@@ -71,7 +67,7 @@ object Sandbox extends App {
 
 
 
-  Calm4.savePage2(InboxUri.uri, "data/inbox2.json")
+  Calm4.savePage2(CalmUri.inboxUri, "data/inbox2.json")
 
   //Course.all(0).appRecords.map(_.mkString("\n").trace)
 
