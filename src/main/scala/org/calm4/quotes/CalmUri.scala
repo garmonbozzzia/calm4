@@ -15,6 +15,17 @@ object CalmUri {
   private val ks = Seq("[data]", "[name]", "[searchable]", "[orderable]", "[search][value]", "[search][regex]")
   private val vs = Seq("", true, true, "", false).map(_.toString)
 
+  def uri: CalmRequest => Uri = {
+    case GetCourseList() => coursesUri()
+    case GetInbox() => inboxUri
+    case GetCourse(id) => courseUri(id)
+    //case GetParticipant(id, courseId) => applicationUri(id,courseId)
+    case GetConversation(participantId) => conversationUri(participantId)
+    case GetMessage(id, participantId ) => messageUri(id, participantId)
+    case GetReflist(participantId) => reflistUri(participantId)
+    case GetSearchResult(s) => searchUri(s)
+  }
+
   private def columnParams(n: Int) = for{
     i <- (0 to n).toList
     (x,y) <- ks.zip(i.toString +: vs)

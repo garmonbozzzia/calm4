@@ -1,17 +1,18 @@
 package org.calm4.quotes
 
 import org.calm4.quotes.CalmModel2.{ApplicantJsonRecord, CourseData, Participant}
-
+import Calm4._
+import Utils._
+import fastparse.all._
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.dsl.DSL._
+import org.calm4.quotes.CalmModel.GetCourse
 
 /**
   * Created by yuri on 01.09.17.
   */
 object Parsers{
-  import Calm4._
-  import Utils._
-  import fastparse.all._
-  import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-  import net.ruippeixotog.scalascraper.dsl.DSL._
+
   def fastParse[T](data: String, parser: Parser[T]) = parser.parse(data) match {
     case Parsed.Success(x: T,_) => Some(x)
     case x => None.traceWith(_ => s"$x\n$data\n")
@@ -36,10 +37,6 @@ object ApplicantRecordOrd extends Ordering[ApplicantJsonRecord] {
   }
 }
 object ParsersTest extends App {
-  import CalmModel._
-  import Utils._
-  import Calm4._
-
 //  case class DataJson(data: List[List[String]])
 //  CachedResponses.getData[DataJson](GetInbox()).map(_.trace) // inbox.json
 //  //CachedResponses.getJson(GetCourseList()).map(_.trace) //courses.json

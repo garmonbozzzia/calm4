@@ -19,6 +19,10 @@ import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
+object Implicits {
+
+}
+
 object Calm4 {
   import Utils._
 

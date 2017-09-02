@@ -6,37 +6,36 @@ import org.calm4.quotes.CalmModel2.{CourseData, Id}
 
 import scala.concurrent.Future
 
-/**
-  * Created by yuri on 02.09.17.
-  */
-
 object DiffChecker {
   import Utils._
   import scala.concurrent.duration._
   import Calm4._
-  case class StateChanged(appId: Id, oldState: String, newState: String)
-  case class ApplicationAdded(id: Id)
+  case class StateChanged(oldState: String, newState: String, appId: Id, courseId: Id)
+  case class ApplicationAdded(appId: Id, courseId: Id)
   case object NoChanges
 
   def diff(oldData: CourseData, newData: CourseData) =
     newData.all.map{ x =>
       oldData.all.find(_.id == x.id)
         .map(_.confirmation_state_name)
-        .fold[Any](ApplicationAdded(x.id)) { oldState =>
+        .fold[Any](ApplicationAdded(x.id, oldData.course_id)) { oldState =>
         if(x.confirmation_state_name == oldState) NoChanges
-        else StateChanged(x.id, oldState, x.confirmation_state_name)
+        else StateChanged(oldState, x.confirmation_state_name, x.id, oldData.course_id)
       }
     }.filter(_ != NoChanges)
 
   class DiffChecker(ids: Seq[Id], timeout: FiniteDuration ) {
-    def reqsNew = Future.sequence(ids.map(GetCourse).map(CachedResponses.forceGetData[CourseData](_)))
-    def reqsOld = Future.sequence(ids.map(GetCourse).map(CachedResponses.getData[CourseData](_)))
+    import CachedWithFile._
+    def reqsNew = Source.fromIterator(() => ids.map(GetCourse).iterator)
+      .mapAsync(2)(get[CourseData](_, true)).runFold(Seq.empty[CourseData])(_ :+ _ )
+    def reqsOld = Source.fromIterator(() => ids.map(GetCourse).iterator)
+      .mapAsync(2)(get[CourseData](_)).runFold(Seq.empty[CourseData])(_ :+ _ )
     def changeSource = Source.tick(0 seconds, timeout, ids )
       .map(_.traceWith(_ => "Start"))
       .mapAsync(1)(_ =>
-        for(os <- reqsOld; ns <- reqsNew)
-          yield for((o,n) <- os zip ns ; res <- diff(o,n)) yield res)
-      .map(_.trace)
+        for(os <- reqsOld; ns <- reqsNew) yield
+          for((o,n) <- os zip ns ; res <- diff(o,n)) yield res
+      ).map(_.trace)
       //.runForeach(_.trace)
   }
 

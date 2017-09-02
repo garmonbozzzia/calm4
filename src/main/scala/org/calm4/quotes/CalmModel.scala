@@ -41,8 +41,6 @@ object CalmModel {
   case class SearchResult(data: List[SearchRecord]) extends CalmResponse
 
   case class ParseError(msg: String)
-  object Male
-  object Female
 
   object SearchRecord{
     def apply(implicit data: List[String]) = new SearchRecord(data(1), data(2), data(4), data(8))
