@@ -33,6 +33,10 @@ object CachedResponses extends Cached[CalmRequest,String] {
 
   def getData[T](calmRequest: CalmRequest)(implicit m: Manifest[T]) =
     get(calmRequest, loadJson(uri(calmRequest))).map(x => parse(x).extract[T])
+
+  def forceGetData[T](calmRequest: CalmRequest)(implicit m: Manifest[T]) =
+    forceGet(calmRequest, loadJson(uri(calmRequest))).map(x => parse(x).extract[T])
+
 }
 
 import Utils._
@@ -46,7 +50,7 @@ object CachedWithFile {
   def save(req: Any, data: String) =
     Files.write(Paths.get(path(req)).trace, data.getBytes(StandardCharsets.UTF_8))
 
-  private def get[T](req: Any, factory: => Future[String])(implicit m: Manifest[T]): Future[T] =
+  def get[T](req: Any, factory: => Future[String])(implicit m: Manifest[T]): Future[T] =
     load(req).fold{ factory.map { x => save(req, x); x} }(x => Future(x))
     .map(x => parse(x).extract[T])
 

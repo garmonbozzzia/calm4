@@ -17,6 +17,8 @@ class Cached[K,T]() {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   val cache = scala.collection.mutable.Map.empty[K,(Long, T)]
 
+  def forceGet(req: K, factory: => Future[T]): Future[T] =
+    factory.map { x => cache(req) = (System.currentTimeMillis, x); x }
   def get(req: K, factory: => Future[T]): Future[T] = cache.get(req).fold{
     factory.map { x => cache(req) = (System.currentTimeMillis, x); x }
   }(x => Future(x._2))

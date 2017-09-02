@@ -1,6 +1,6 @@
 package org.calm4.quotes
 
-import org.calm4.quotes.CalmModel.{GetCourseList, GetInbox}
+import org.calm4.quotes.CalmModel.{GetCourse, GetCourseList, GetInbox}
 
 /**
   * Created by yuri on 01.09.17.
@@ -13,7 +13,7 @@ object UriTest extends App{
   //CachedResponses.getJson(GetInbox()).map(_.trace) // inbox.json
 
 
-  //CachedResponses.getJson(GetCourse(2535)).map(_.trace) //course2535.json
+  CachedResponses.getJson(GetCourse(2535)).map(_.trace) //course2535.json
   //CachedResponses.getJson(GetParticipant(175435,2535)).map(_.trace) //возвращает html
   //CachedResponses.getJson(GetConversation(163755)).map(_.trace)
   //CachedResponses.getJson(GetReflist(165687)).map(_.trace)

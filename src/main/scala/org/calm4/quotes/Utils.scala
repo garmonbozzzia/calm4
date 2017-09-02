@@ -16,4 +16,13 @@ object Utils {
       obj
     }
   }
+
+  implicit class Mapable (val cc: Any) extends AnyVal {
+    def ccToMap =
+      (Map[String, Any]() /: cc.getClass.getDeclaredFields) {
+      (a, f) =>
+        f.setAccessible(true)
+        a + (f.getName -> f.get(cc))
+    }
+  }
 }

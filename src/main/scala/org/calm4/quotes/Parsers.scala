@@ -1,6 +1,6 @@
 package org.calm4.quotes
 
-import org.calm4.quotes.CalmModel2.{ApplicantRecord, CourseData, Participant}
+import org.calm4.quotes.CalmModel2.{ApplicantJsonRecord, CourseData, Participant}
 
 
 /**
@@ -27,9 +27,9 @@ object Parsers{
     .map(x => Participant(x._1, x._2))
   val messageParser = P("https://calm.dhamma.org".? ~ "/en/course_applications/" ~ id ~ "/messages/" ~ id)
 }
-object ApplicantRecordOrd extends Ordering[ApplicantRecord] {
+object ApplicantRecordOrd extends Ordering[ApplicantJsonRecord] {
   val priorities = TmSymbolMap.toTmSeq.map(_._1)
-  override def compare(x: ApplicantRecord, y: ApplicantRecord): Int = {
+  override def compare(x: ApplicantJsonRecord, y: ApplicantJsonRecord): Int = {
     if(x.confirmation_state_name == y.confirmation_state_name)
       x.applicant_family_name.compare(y.applicant_family_name)
     else priorities.indexOf(x.confirmation_state_name) - priorities.indexOf(y.confirmation_state_name)

@@ -13,7 +13,7 @@ import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
-import org.calm4.quotes.CalmModel2.ApplicantRecord
+import org.calm4.quotes.CalmModel2.ApplicantJsonRecord
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
@@ -23,7 +23,7 @@ object Calm4 {
   import Utils._
 
   implicit val system = ActorSystem()
-  implicit val ord: Ordering[ApplicantRecord] = ApplicantRecordOrd
+  implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
 
   //implicit val materializer = ActorMaterializer()
   val decider: Supervision.Decider = x => Supervision.Resume.traceWith(_ => x)
@@ -123,14 +123,14 @@ object Calm4 {
   def loadJson(uri: Uri, headers: Seq[HttpHeader]): Future[String] =  Http().singleRequest(
     headers.foldLeft(HttpRequest(uri = uri.traceWith(_.path)))(_ addHeader _).addHeader(cookie))
     .flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
-    .map(x => x.utf8String.trace)
+    .map(x => x.utf8String)
 
   def loadJson(uri: Uri): Future[String] = Http().singleRequest(
     HttpRequest(uri = uri.traceWith(_.path))
       //.addHeaders(TestSearchUri.hs.toArray)
       .addHeader(cookie).addHeader(xml).addHeader(accept).addHeader(referer)
   ).flatMap(_.entity.dataBytes.runFold(ByteString.empty)(_ ++ _) )
-    .map(x => x.utf8String.trace)
+    .map(x => x.utf8String)
 
 
   def getAppUrls(courseUrl: String): Future[List[String]] = loadPage(courseUrl).map(parseApplicantList)
