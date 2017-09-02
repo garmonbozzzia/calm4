@@ -46,7 +46,7 @@ object CachedWithFile {
   def save(req: Any, data: String) =
     Files.write(Paths.get(path(req)).trace, data.getBytes(StandardCharsets.UTF_8))
 
-  def get[T](req: Any, factory: => Future[String])(implicit m: Manifest[T]): Future[T] =
+  private def get[T](req: Any, factory: => Future[String])(implicit m: Manifest[T]): Future[T] =
     load(req).fold{ factory.map { x => save(req, x); x} }(x => Future(x))
     .map(x => parse(x).extract[T])
 

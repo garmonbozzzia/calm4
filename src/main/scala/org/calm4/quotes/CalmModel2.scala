@@ -68,6 +68,7 @@ object CalmModel2{
                         user_can_assign_hall_position: Boolean,
                         sitting: MaleFemaleSittings,
                         serving: MaleFemaleServing){
+    def diff(other: CourseData) = ???
     lazy val all =
       serving.female ++
         serving.male ++

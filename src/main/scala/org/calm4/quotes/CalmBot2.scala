@@ -15,25 +15,22 @@ object CalmBot2 extends TelegramBot
   with InlineQueries {
   def token = "418829147:AAHvnI1_RePHOrYSovqO7zMzOad2wENwwT4"
 
-  def tmLink: ApplicantRecord => String = {
-    case x => s"""[/a${x.id}](/a${x.id})"""
-  }
-
   object ApplicantRecordTm{
     def apply: ApplicantRecord => ApplicantRecordTm = {
       case ApplicantRecord(id, _, gName, fName, age, sit, old, _, _, ad_hoc, pregnant, sat, served, _, _, _, state ) =>
-        new ApplicantRecordTm(s"/a$id", fName, gName,
+        new ApplicantRecordTm(id,
+          fName, gName,
           sit.fold("❌")(if(_) old.fold("❌")(if(_) "🎓" else "") else "⭐"),
           state,
           TmSymbolMap.toTm.getOrElse(state,"❓"),
           age.getOrElse(0),
-          old.map(_ => sat.getOrElse(0) -> served.getOrElse(0))
+          old.flatMap(if(_) Some(sat.getOrElse(0) -> served.getOrElse(0)) else None)
         )
     }
   }
-  case class ApplicantRecordTm(id: String, familyName: String, givenName: String, nos: String, longStatus: String,
+  case class ApplicantRecordTm(id: Int, familyName: String, givenName: String, nos: String, longStatus: String,
                                shortStatus: String, age: Int, sitAndServed: Option[(Int,Int)] ) {
-    val view1 = s"$id $shortStatus *$familyName $givenName*"
+    val view1 = s"/a$id $shortStatus *$familyName $givenName*"
     val view2 =
       s"*$familyName $givenName* _Age:_ $age\n$shortStatus $longStatus${sitAndServed.fold(""){case (x,y) => s"\n$nos Sit: $x Served: $y"}}"
 
@@ -44,11 +41,13 @@ object CalmBot2 extends TelegramBot
 
 
   implicit val ord: Ordering[ApplicantRecord] = ApplicantRecordOrd
-  def text(courseData: CourseData) = courseData.sitting.female.old.sorted
+  def text(courseData: CourseData) =
+  courseData.sitting.female.`new`.sorted
+  //courseData.all.sorted
     .map(x=>ApplicantRecordTm(x).view1).mkString("\n")
   onCommand('c2535) { implicit msg =>
     for{
-      courseData <- CachedWithFile.get[CourseData](GetCourse(2535), ???)
+      courseData <- CachedWithFile.get[CourseData](GetCourse(2535))
     } yield {
       reply(
         text(courseData),
@@ -59,7 +58,7 @@ object CalmBot2 extends TelegramBot
   }
 
   onMessage{ implicit msg =>
-    val course = CachedWithFile.get[CourseData](GetCourse(2535), ???)
+    val course = CachedWithFile.get[CourseData](GetCourse(2535))
     msg.text.flatMap(Parsers.tmAppId).map{
       id => course.map(_.all.find(_.id == id).get)
     }.map(
