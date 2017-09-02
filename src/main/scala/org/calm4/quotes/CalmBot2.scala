@@ -13,7 +13,8 @@ object CalmBot2 extends TelegramBot
   with Commands
   with Callbacks
   with InlineQueries {
-  def token = "418829147:AAHvnI1_RePHOrYSovqO7zMzOad2wENwwT4"
+  def token = scala.io.Source.fromFile("data/BotToken").getLines().mkString
+
 
   object ApplicantRecordTm{
     def apply: ApplicantRecord => ApplicantRecordTm = {
