@@ -1,24 +1,19 @@
 package org.calm4.quotes
 
-import java.text.DateFormat
-import java.util.Date
-
-import akka.http.scaladsl.model.{HttpHeader, Uri}
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.{HttpHeader, Uri}
+import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
-import org.calm4.quotes.Calm4.{DataJson, browser}
-import org.json4s.JValue
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL._
 
 import scala.concurrent.Future
-
+import scala.concurrent.ExecutionContext.Implicits._
 /**
   * Created by yuri on 29.08.17.
   */
 object CalmModel {
+  import Calm4._
 
   type Id = Int
   case class Participant(id: Id, courseId: Id)
@@ -82,19 +77,23 @@ object CalmModel {
 
 
   import Calm4._
+  case class DataJson(data: List[List[String]])
+  import org.json4s._
+  import org.json4s.jackson.JsonMethods._
   def load: CalmRequest => Future[CalmResponse] = {
     case GetCourse(id) => loadPage(s"https://calm.dhamma.org/en/courses/$id/course_applications").map(CalmHtml)
     case GetParticipant(id, courseId) =>
       loadPage(s"https://calm.dhamma.org/en/courses/$courseId/course_applications/$id/edit").map(CalmHtml)
-    case GetInbox() => loadJson_(CalmUri.inboxUri).map(CalmJson)
+    case GetInbox() => loadJson(CalmUri.inboxUri).map(parse(_).extract[DataJson]).map(CalmJson)
     case GetSearchResult(s) =>
-      loadJson_(Uri("https://calm.dhamma.org/en/course_applications/search").withQuery(Query(Map("typeahead" -> s)))).map(CalmJson)
+      loadJson(Uri("https://calm.dhamma.org/en/course_applications/search").withQuery(Query(Map("typeahead" -> s))))
+        .map(parse(_).extract[DataJson]).map(CalmJson)
   }
 }
 
-import Utils._
-import CalmModel._
-import Calm4._
+import org.calm4.quotes.Calm4._
+import org.calm4.quotes.CalmModel._
+import org.calm4.quotes.Utils._
 object CalmSearchTest extends App {
   load(GetSearchResult("B"))
     .map(_.trace)
@@ -115,11 +114,6 @@ object CalmModelTest extends App {
   val res2 = l1 >> text("a")
   res.trace
   res2.trace
-
-  import org.json4s.Xml.{toJson, toXml}
-
-
-
 
   val p1 = List(
     "<a class='category-link' href='/en/courses/2535/course_applications/168127/edit#ref_list'>New</a>",

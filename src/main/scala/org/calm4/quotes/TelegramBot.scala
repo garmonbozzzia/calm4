@@ -45,14 +45,6 @@ object CalmBot extends TelegramBot
       }
   }
 
-    onCommand('sessionId) { implicit msg =>
-      withArgs {
-        args =>
-          Files.write(Paths.get(sessionIdFile), args(0).trace.getBytes(StandardCharsets.UTF_8))
-          reply("Session Id saved")
-      }
-    }
-
     onCommand('apps) { implicit msg =>
       reply("10")
       Course.all.head.appRecords.map(_.trace).flatMap(x => reply(x.take(10).map(_.link).mkString("\n")))

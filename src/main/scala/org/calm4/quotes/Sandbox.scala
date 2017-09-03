@@ -67,7 +67,7 @@ object Sandbox extends App {
 
 
 
-  Calm4.savePage2(CalmUri.inboxUri, "data/inbox2.json")
+  Calm4.saveJson(CalmUri.inboxUri, "data/inbox2.json")
 
   //Course.all(0).appRecords.map(_.mkString("\n").trace)
 

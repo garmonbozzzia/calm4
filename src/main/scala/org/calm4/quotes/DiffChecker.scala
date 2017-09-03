@@ -6,19 +6,22 @@ import org.calm4.quotes.CalmModel2.{CourseData, Id}
 
 import scala.concurrent.Future
 
+
 object DiffChecker {
   import Utils._
   import scala.concurrent.duration._
   import Calm4._
-  case class StateChanged(oldState: String, newState: String, appId: Id, courseId: Id)
-  case class ApplicationAdded(appId: Id, courseId: Id)
-  case object NoChanges
 
-  def diff(oldData: CourseData, newData: CourseData) =
+  trait Diff
+  case class StateChanged(oldState: String, newState: String, appId: Id, courseId: Id) extends Diff
+  case class ApplicationAdded(appId: Id, courseId: Id) extends Diff
+  case object NoChanges extends Diff
+
+  def diff(oldData: CourseData, newData: CourseData): Seq[Diff] =
     newData.all.map{ x =>
       oldData.all.find(_.id == x.id)
         .map(_.confirmation_state_name)
-        .fold[Any](ApplicationAdded(x.id, oldData.course_id)) { oldState =>
+        .fold[Diff](ApplicationAdded(x.id, oldData.course_id)) { oldState =>
         if(x.confirmation_state_name == oldState) NoChanges
         else StateChanged(oldState, x.confirmation_state_name, x.id, oldData.course_id)
       }

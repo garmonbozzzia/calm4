@@ -5,6 +5,7 @@ import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
 import info.mukel.telegrambot4s.methods.ParseMode
 import org.calm4.quotes.CalmModel.GetCourse
 import org.calm4.quotes.CalmModel2.{ApplicantJsonRecord, CourseData}
+import org.calm4.quotes.DiffChecker._
 
 object CalmBot2 extends TelegramBot
   with Polling
@@ -16,13 +17,23 @@ object CalmBot2 extends TelegramBot
   def replyMarkup(courseData: CourseData) = None
 
   implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
+
+
+  implicit class ToTm(data: Diff){
+    def view: String = data match {
+      case ApplicationAdded(appId, courseId) => s"New: /a_${courseId}_$appId"
+      case StateChanged(oldState, newState, appId, courseId) => ???
+    }
+  }
+
   def text(courseData: CourseData) =
   courseData.sitting.female.`new`.sorted
   //courseData.all.sorted
     .map(x=>ApplicantJsonRecordTm(x).view1).mkString("\n")
+  import scala.concurrent.duration._
   onCommand('inbox) { implicit msg =>
-    DiffChecker.source(Seq(2526,2532,2481,2537,2534,2330))
-      .runForeach(x => if(x.nonEmpty) reply(x.mkString("\n")))
+    DiffChecker.source(Seq(2526,2532,2481,2537,2534,2330), 10 minutes)
+      .runForeach(x => if(x.nonEmpty) reply(x.map(_.view)mkString("\n")))
   }
   onCommand('c2535) { implicit msg =>
     for{
