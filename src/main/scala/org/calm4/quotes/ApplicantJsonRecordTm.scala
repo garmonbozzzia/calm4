@@ -3,9 +3,6 @@ package org.calm4.quotes
 import org.calm4.quotes.CalmModel2.ApplicantJsonRecord
 import scalaz.Scalaz._
 
-/**
-  * Created by yuri on 03.09.17.
-  */
 object ApplicantJsonRecordTm{
   def apply: ApplicantJsonRecord => ApplicantJsonRecordTm = {
     case ApplicantJsonRecord(id, _, gName, fName, age, sit, old, _, _, ad_hoc, pregnant, sat, served, _, _, _, state ) =>
@@ -13,7 +10,6 @@ object ApplicantJsonRecordTm{
         sit ? (old ? "🎓" | "") | "⭐",
         state, TmSymbolMap.toTm.getOrElse(state,"❓"),
         age.getOrElse(0),
-        //old.flatMap(if(_) Some(sat.getOrElse(0) -> served.getOrElse(0)) else None)
         old ? Option(sat.getOrElse(0) -> served.getOrElse(0)) | None
       )
   }

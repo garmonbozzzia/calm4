@@ -6,12 +6,8 @@ import akka.http.scaladsl.model.{HttpHeader, Uri}
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
-
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits._
-/**
-  * Created by yuri on 29.08.17.
-  */
+
 object CalmModel {
   import Calm4._
 
@@ -127,31 +123,3 @@ object CalmModelTest extends App {
     "Russian"
   )
 }
-
-
-
-object TestSearchUri{
-
-  case class Participant(id: String, course: Course) {
-
-  }
-  case class Course(id: String)
-
-  val hs = Seq(
-    //"Connection" -> "keep-alive",
-    "Accept" -> "application/json, text/javascript, */*; q=0.01",
-    //"X-CSRF-Token" -> "EjeyVBeVMKOsi2SQpBXIiiztkK4vhjkP9FpUIdTDRnQ=",
-    "Referer" -> "",
-    "X-Requested-With" -> "XMLHttpRequest"
-    //"Accept-Encoding" -> "gzip, deflate, br",
-    //"Accept-Language" -> "ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
-    //"X-Compress" -> "null"
-  ).map{case (x,y) => RawHeader(x,y).asInstanceOf[HttpHeader]}
-}
-
-
-
-
-
-
-

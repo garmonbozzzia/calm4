@@ -1,9 +1,5 @@
 package org.calm4.quotes
 
-/**
-  * Created by yuri on 01.09.17.
-  */
-
 object TmSymbolMap{
   //val sortMap =
   val toTmSeq: Seq[(String,String)] = Seq(
@@ -28,5 +24,5 @@ object TmSymbolMap{
     "Discontinued" -> " ❌ ",
     "Refused" -> " ⛔ "
   )
-  val toTm = toTmSeq.toMap
+  val toTm: Map[String, String] = toTmSeq.toMap
 }

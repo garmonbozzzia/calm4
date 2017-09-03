@@ -3,15 +3,13 @@ package org.calm4.quotes
 import akka.stream.scaladsl.Source
 import org.calm4.quotes.CalmModel.GetCourse
 import org.calm4.quotes.CalmModel2.{CourseData, Id}
-
-import scala.concurrent.Future
-
+import Calm4._
+import Utils._
+import scala.concurrent.duration._
+import CachedWithFile._
+import akka.actor.Cancellable
 
 object DiffChecker {
-  import Utils._
-  import scala.concurrent.duration._
-  import Calm4._
-
   trait Diff
   case class StateChanged(oldState: String, newState: String, appId: Id, courseId: Id) extends Diff
   case class ApplicationAdded(appId: Id, courseId: Id) extends Diff
@@ -28,12 +26,11 @@ object DiffChecker {
     }.filter(_ != NoChanges)
 
   class DiffChecker(ids: Seq[Id], timeout: FiniteDuration ) {
-    import CachedWithFile._
-    def reqsNew = Source.fromIterator(() => ids.map(GetCourse).iterator)
-      .mapAsync(2)(get[CourseData](_, true)).runFold(Seq.empty[CourseData])(_ :+ _ )
-    def reqsOld = Source.fromIterator(() => ids.map(GetCourse).iterator)
+    private def reqsNew = Source.fromIterator(() => ids.map(GetCourse).iterator)
+      .mapAsync(2)(get[CourseData](_, force = true)).runFold(Seq.empty[CourseData])(_ :+ _ )
+    private def reqsOld = Source.fromIterator(() => ids.map(GetCourse).iterator)
       .mapAsync(2)(get[CourseData](_)).runFold(Seq.empty[CourseData])(_ :+ _ )
-    def changeSource = Source.tick(0 seconds, timeout, ids )
+    def changeSource: Source[Seq[Diff], Cancellable] = Source.tick(0 seconds, timeout, ids )
       .map(_.traceWith(_ => "Start"))
       .mapAsync(1)(_ =>
         for(os <- reqsOld; ns <- reqsNew) yield
@@ -42,5 +39,6 @@ object DiffChecker {
       //.runForeach(_.trace)
   }
 
-  def source(ids: Seq[Id], timeout: FiniteDuration = 1 minute) = new DiffChecker(ids, timeout).changeSource
+  def source(ids: Seq[Id], timeout: FiniteDuration = 1 minute): Source[Seq[Diff], Cancellable] =
+    new DiffChecker(ids, timeout).changeSource
 }

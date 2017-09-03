@@ -2,12 +2,8 @@ package org.calm4.quotes
 
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Query
-import org.calm4.quotes.CalmModel.{GetCourse, GetCourseList, GetInbox}
+import org.calm4.quotes.Utils._
 
-/**
-  * Created by yuri on 01.09.17.
-  */
-import Utils._
 object UriTest extends App{
   import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global

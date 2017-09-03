@@ -1,10 +1,7 @@
 package org.calm4.quotes
 
-import akka.actor.Status.Success
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
-import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
-import org.calm4.quotes.Calm4.browser
 import org.calm4.quotes.CalmModel._
 
 /**
@@ -35,13 +32,13 @@ object CalmUri {
   implicit def seq2query(seq: Seq[(String, String)]): Uri.Query = Uri.Query(seq.toMap)
   implicit def string2Path(str: String): Path = Path(str)
 
-  def searchUri(s: String) = host.withPath("/en/course_applications/search").withQuery(Query("typeahead" -> s))
-  def messageUri(msgId: Int, appId: Id) = host.withPath(s"/en/course_applications/$appId/messages/$msgId")
+  def searchUri(s: String): Uri = host.withPath("/en/course_applications/search").withQuery(Query("typeahead" -> s))
+  def messageUri(msgId: Int, appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/messages/$msgId")
 
-  def applicationUri(appId: Id, courseId: Id) =
+  def applicationUri(appId: Id, courseId: Id): Uri =
     host.withPath(s"/en/courses/$courseId/course_applications/$appId/edit")
 
-  def reflistUri(appId: Id) = host
+  def reflistUri(appId: Id): Uri = host
     .withPath(s"/en/course_application/$appId/course_application_load_rl")
     .withQuery(columnParams(9) ++ Seq(
       "order[0][column]" -> "0",
@@ -52,7 +49,7 @@ object CalmUri {
       "search[regex]" -> "false"
     ))
 
-  def courseUri(id: Int) = host.withPath(s"/en/courses/$id/course_applications")
+  def courseUri(id: Int): Uri = host.withPath(s"/en/courses/$id/course_applications")
 
   lazy val inboxUri: Uri = host
     .withPath("/en/course_applications/inbox")
@@ -70,7 +67,7 @@ object CalmUri {
     )
   )
 
-  def coursesUri(startDate: String = "2017-8-01") = host.withPath("/en/courses").withQuery(columnParams(10) ++ Seq (
+  def coursesUri(startDate: String = "2017-8-01"): Uri = host.withPath("/en/courses").withQuery(columnParams(10) ++ Seq (
   "order[0][column]" -> "0",
   "order[0][dir]" -> "asc",
   "start" -> "0",
@@ -87,7 +84,7 @@ object CalmUri {
   "user_custom_search[context]" -> "all_courses"
   ))
 
-  def conversationUri(appId: Id) = host.withPath(s"/en/course_applications/$appId/conversation_datatable")
+  def conversationUri(appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/conversation_datatable")
     .withQuery(
       columnParams(8) ++ Seq(
         "order[0][column]" -> "0",

@@ -1,23 +1,12 @@
 package org.calm4.quotes
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
-
-import akka.stream.scaladsl.Source
-import info.mukel.telegrambot4s.api.{Extractors, Polling, TelegramBot}
 import info.mukel.telegrambot4s.api.declarative._
-import info.mukel.telegrambot4s.methods.{AnswerInlineQuery, EditMessageReplyMarkup, EditMessageText, ParseMode}
+import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
+import info.mukel.telegrambot4s.methods.{EditMessageText, ParseMode}
 import info.mukel.telegrambot4s.models._
 import org.calm4.quotes.CalmModel._
-
-/**
-  * Created by yuri on 25.08.17.
-  */
-
-import Utils._
-import Calm4._
-
-
+import org.calm4.quotes.Calm4._
+import org.calm4.quotes.Utils._
 
 object CalmBot extends TelegramBot
   with Polling
@@ -33,7 +22,8 @@ object CalmBot extends TelegramBot
   onInlineQuery { implicit cbq =>
     cbq.trace
     load(GetSearchResult(cbq.query)).map { case CalmJson(json) =>
-      json.data.map(x => SearchRecord(x)) }
+      json.data.map(x => SearchRecord(x))
+    }
       .flatMap { result =>
         answerInlineQuery(
           result.zipWithIndex.map(record => InlineQueryResultArticle(
@@ -45,84 +35,80 @@ object CalmBot extends TelegramBot
       }
   }
 
-    onCommand('apps) { implicit msg =>
-      reply("10")
-      Course.all.head.appRecords.map(_.trace).flatMap(x => reply(x.take(10).map(_.link).mkString("\n")))
+  onCommand('apps) { implicit msg =>
+    reply("10")
+    Course.all.head.appRecords.map(_.trace).flatMap(x => reply(x.take(10).map(_.link).mkString("\n")))
+  }
+
+  onCommand('appExample) { implicit msg =>
+    TestData.app1TelegramViewExample.flatMap(x => reply(text = x, parseMode = Some(ParseMode.Markdown)))
+  }
+
+
+  val cache = Map[Long, Participant]()
+  val cache2 = Map[Participant, Long]()
+  onCallbackWithTag("Details") { implicit cbq =>
+    for (msg <- cbq.message) {
+      val Participant(id, cId) = cache(msg.messageId)
+      val newText = load(GetParticipant(id, cId))
+      newText
+        .map {
+          case CalmHtml(html) => "TODO" //html >>
+        }
+        .flatMap(x => request(
+          EditMessageText(
+            chatId = Some(msg.source),
+            messageId = Some(msg.messageId),
+            text = x
+          )
+        ))
+    }
+  }
+
+
+  onCommand('inbox) { implicit msg =>
+    def toTelegram(ir: InboxRecord): String = {
+      s"${
+        ir.messageType.map {
+          case "Reply" => "📧"
+          case "New" => "" //"📨"
+          case x => "❌" + x
+        }.get
+      } *${ir.name.get}* ${
+        ir.participationType.map {
+          case "Server FT" => "⭐"
+          case "OFT" => "🎓"
+          case "NEW" => "" //"⭕"
+          case x => "❌" + x
+        }.get
+      }${
+        ir.gender.map {
+          case "M" => "🚹"
+          case "F" => "🚺"
+          case x => "❌" + x
+        }.get
+      } \nПолучено: ${ir.received.get}\n[Ссылка](https://calm.dhamma.org${ir.link.get})"
     }
 
+    //:mens::womens::new::o2::recycle:
 
-    onCommand('appExample) { implicit msg =>
-      TestData.app1TelegramViewExample.flatMap(x => reply(text = x, parseMode = Some(ParseMode.Markdown)))
-    }
-
-
-
-    val cache = Map[Long, Participant]()
-    val cache2 = Map[Participant, Long]()
-    onCallbackWithTag("Details") { implicit cbq =>
-      for (msg <- cbq.message) {
-        val Participant(id, cId) = cache(msg.messageId)
-        val newText = load(GetParticipant(id, cId))
-        newText
-          .map {
-            case CalmHtml(html) => "TODO" //html >>
-          }
-          .flatMap(x => request(
-            EditMessageText(
-              chatId = Some(msg.source),
-              messageId = Some(msg.messageId),
-              text = x
-            )
-          ))
-      }
-    }
-
-
-    onCommand('inbox) { implicit msg =>
-      def toTelegram(ir: InboxRecord): String = {
-        s"${
-          ir.messageType.map {
-            case "Reply" => "📧"
-            case "New" => "" //"📨"
-            case x => "❌" + x
-          }.get
-        } *${ir.name.get}* ${
-          ir.participationType.map {
-            case "Server FT" => "⭐"
-            case "OFT" => "🎓"
-            case "NEW" => "" //"⭕"
-            case x => "❌" + x
-          }.get
-        }${
-          ir.gender.map {
-            case "M" => "🚹"
-            case "F" => "🚺"
-            case x => "❌" + x
-          }.get
-        } \nПолучено: ${ir.received.get}\n[Ссылка](https://calm.dhamma.org${ir.link.get})"
-      }
-
-      //:mens::womens::new::o2::recycle:
-
-      val cache = Map[Participant, String]()
-
-      load(GetInbox()).map {
-        case CalmJson(json) => json.data
-          //.traceWith(_.map(_.mkString("\n")).mkString("\n\n"))
-          .map(new InboxRecord(_))
-          .map(toTelegram)
-      }.foreach(
-        x => x.foreach(y =>
-          reply(text = y,
-            parseMode = Some(ParseMode.Markdown),
-            replyMarkup = Some(InlineKeyboardMarkup.singleButton(InlineKeyboardButton("Details...", Some("Details"))))
-          ).foreach(_.messageId.trace)
-        )
+    load(GetInbox()).map {
+      case CalmJson(json) => json.data
+        //.traceWith(_.map(_.mkString("\n")).mkString("\n\n"))
+        .map(new InboxRecord(_))
+        .map(toTelegram)
+    }.foreach(
+      x => x.foreach(y =>
+        reply(text = y,
+          parseMode = Some(ParseMode.Markdown),
+          replyMarkup = Some(InlineKeyboardMarkup.singleButton(InlineKeyboardButton("Details...", Some("Details"))))
+        ).foreach(_.messageId.trace)
       )
-    }
+    )
   }
+}
 
-  object CalmBotApp extends App {
-    CalmBot.run()
-  }
+object CalmBotApp extends App {
+  CalmBot.run()
+}
 

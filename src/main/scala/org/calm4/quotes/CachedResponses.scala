@@ -23,17 +23,17 @@ class MapCache[K,T]() {
 
 object CachedResponses extends MapCache[CalmRequest,String] {
   implicit val formats = DefaultFormats
-  def getJson(req: CalmRequest) = get(req, false, uri andThen loadJson)
+  def getJson(req: CalmRequest): Future[String] = get(req, force = false, uri andThen loadJson)
   def get[T](calmRequest: CalmRequest, forced: Boolean = false)(implicit m: Manifest[T]): Future[T] =
     get(calmRequest, forced, uri andThen loadJson).map(x => parse(x).extract[T])
 }
 
 object CachedWithFile {
   implicit val formats = DefaultFormats
-  def path(req: Any) = s"data/cache/${req.hashCode()}.json"
-  def load(req: Any) = Try(scala.io.Source.fromFile(path(req)).mkString).toOption
+  private def path(req: Any) = s"data/cache/${req.hashCode()}.json"
+  private def load(req: Any) = Try(scala.io.Source.fromFile(path(req)).mkString).toOption
     //.map(_.traceWith(_ => s"Loaded: $req"))
-  def save(req: Any, data: String) =
+  private def save(req: Any, data: String) =
     Files.write(Paths.get(path(req)).traceWith(x => s"Saved: $x"), data.getBytes(StandardCharsets.UTF_8))
   def get[K](req: K, force: Boolean, factory: K => Future[String]): Future[String] =
     (!force ? load(req) | None).fold{ factory(req)

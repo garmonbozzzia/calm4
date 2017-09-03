@@ -1,18 +1,13 @@
 package org.calm4.quotes
 
+import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, elementList}
 import org.calm4.quotes.Calm4.browser
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL._
-/**
-  * Created by yuri on 03.09.17.
-  */
+
 trait Calm4Old {
   val host = "https://calm.dhamma.org"
   val actualStates = List("Finished", "In Progress", "Scheduled")
-  def validate(data: List[String]) =
-    data(2) == "10-Day" && actualStates.exists( _ == data(5))
   val coursesFile = "data/Registration.html"
   //  val courses: List[Course] = browser.parseFile(coursesFile) >> elementList(".colour-event-datatable-row")
   //    .map(x => (x >> attr("href")("a"))

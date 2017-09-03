@@ -1,25 +1,21 @@
 package org.calm4.quotes
 
-/**
-  * Created by yuri on 16.07.17.
-  */
-
 object Utils {
   implicit class Tracable[A] (val obj: A) extends AnyVal {
-    def trace = {
+    def trace: A = {
       println(obj)
       obj
     }
 
-    def traceWith[B](f: A => B ) = {
+    def traceWith[B](f: A => B ): A = {
       println(f(obj))
       obj
     }
   }
 
   implicit class SideEffectable[A] (val obj: A) extends AnyVal {
-    def *>[B](f: A => B) = {
-      f(obj);
+    def *>[B](f: A => B): A = {
+      f(obj)
       obj
     }
   }
@@ -29,7 +25,7 @@ object Utils {
   }
 
   implicit class Mapable (val cc: Any) extends AnyVal {
-    def ccToMap =
+    def ccToMap: Map[String, Any] =
       (Map[String, Any]() /: cc.getClass.getDeclaredFields) {
       (a, f) =>
         f.setAccessible(true)
