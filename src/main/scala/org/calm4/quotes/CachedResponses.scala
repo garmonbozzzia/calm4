@@ -1,7 +1,7 @@
 package org.calm4.quotes
 
 import java.nio.charset.StandardCharsets
-import org.calm4.quotes.Calm4.loadJson
+import org.calm4.quotes.Calm4Http._
 import org.calm4.quotes.CalmModel._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._

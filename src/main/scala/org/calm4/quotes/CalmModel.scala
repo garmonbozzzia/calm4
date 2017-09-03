@@ -1,15 +1,19 @@
 package org.calm4.quotes
 
+import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{HttpHeader, Uri}
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
+import org.calm4.quotes.Calm4Http._
+import org.calm4.quotes.CalmImplicits._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+
 import scala.concurrent.Future
 
+
 object CalmModel {
-  import Calm4._
 
   type Id = Int
   case class Participant(id: Id, courseId: Id)
@@ -71,11 +75,7 @@ object CalmModel {
     lazy val language = data.lift(8)
   }
 
-
-  import Calm4._
   case class DataJson(data: List[List[String]])
-  import org.json4s._
-  import org.json4s.jackson.JsonMethods._
   def load: CalmRequest => Future[CalmResponse] = {
     case GetCourse(id) => loadPage(s"https://calm.dhamma.org/en/courses/$id/course_applications").map(CalmHtml)
     case GetParticipant(id, courseId) =>
@@ -87,7 +87,6 @@ object CalmModel {
   }
 }
 
-import org.calm4.quotes.Calm4._
 import org.calm4.quotes.CalmModel._
 import org.calm4.quotes.Utils._
 object CalmSearchTest extends App {

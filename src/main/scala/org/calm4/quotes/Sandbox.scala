@@ -1,9 +1,13 @@
 package org.calm4.quotes
 
 import java.nio.file.{Files, Paths}
+
 import akka.stream.scaladsl.{Sink, Source}
-import org.calm4.quotes.Calm4._
+import Calm4._
+import org.calm4.quotes.Calm4Http._
+import org.calm4.quotes.CalmImplicits._
 import org.calm4.quotes.Utils._
+
 import scala.concurrent.Future
 
 object CalmApps {
@@ -31,12 +35,11 @@ object CalmApps {
 }
 
 
-import org.calm4.quotes.Calm4._
 import org.calm4.quotes.Utils._
 object TestData {
   lazy val app1ExampleUri = "https://calm.dhamma.org/en/courses/2528/course_applications/166012/edit"
   lazy val courseExampleUri1 = "https://calm.dhamma.org/en/courses/2528/course_applications"
-  lazy val app1ExamplePage = Calm4.loadPage(app1ExampleUri).map(_.trace)
+  lazy val app1ExamplePage = loadPage(app1ExampleUri).map(_.trace)
   lazy val app1Example: Future[Applicant_] = app1ExamplePage.map(x => Calm4.parseApplicant(x)).map(_.trace)
 
   def telegramView(app: Applicant_): String = s"*${app.familyName} ${app.name}*\n${app.town} _${app.province}_\n${app.occupation}"
@@ -51,12 +54,9 @@ object Sandbox extends App {
   //val appsUrl = "https://calm.dhamma.org/en/courses/2478/course_applications"
   val appsUrl = "https://calm.dhamma.org/en/courses/2481/course_applications"
 
-
   //Course.all.head.appRecords.map(_.trace)
 
-
-
-  Calm4.saveJson(CalmUri.inboxUri, "data/inbox2.json")
+  saveJson(CalmUri.inboxUri, "data/inbox2.json")
 
   //Course.all(0).appRecords.map(_.mkString("\n").trace)
 
@@ -93,18 +93,4 @@ object Sandbox extends App {
 
 
   //system.terminate()
-
-
 }
-
-
-
-//
-//
-//
-//object InboxQueryApp extends App{
-//  InboxUri.map.trace
-//  Uri("").withQuery(Uri.Query(InboxUri.map)).toString().trace
-//}
-//
-

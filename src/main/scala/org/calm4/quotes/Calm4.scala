@@ -9,8 +9,9 @@ import akka.stream.scaladsl.FileIO
 import akka.util.ByteString
 import net.ruippeixotog.scalascraper.model.Document
 import scala.concurrent.Future
+import CalmImplicits._
 
-trait Calm4Http extends CalmImplicits {
+object Calm4Http{
   val accept = RawHeader("Accept", "application/json, text/javascript, */*; q=0.01")
   //val xcsrf = RawHeader("X-CSRF-Token", "EjeyVBeVMKOsi2SQpBXIiiztkK4vhjkP9FpUIdTDRnQ=")
   val xml = RawHeader("X-Requested-With", "XmlHttpRequest")
@@ -47,6 +48,7 @@ trait Calm4Http extends CalmImplicits {
   } yield filePath
 }
 
-object Calm4 extends Calm4Old with CalmImplicits with Calm4Http {
+import Calm4Http._
+object Calm4 extends Calm4Old {
   def getAppUrls(courseUrl: String): Future[List[String]] = loadPage(courseUrl).map(parseApplicantList)
 }

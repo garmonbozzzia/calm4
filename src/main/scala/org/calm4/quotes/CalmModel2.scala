@@ -2,6 +2,8 @@ package org.calm4.quotes
 
 import org.calm4.quotes.CalmModel.CalmResponse
 import scala.concurrent.Future
+import Utils._
+import CalmImplicits._
 
 /**
   * Created by yuri on 01.09.17.
@@ -80,10 +82,6 @@ object CalmModel2 {
 }
 
 object DiffTest extends App {
-
-  import Calm4._
-  import Utils._
-
   DiffChecker.source(Seq(2535)).runForeach(_.trace)
 }
 

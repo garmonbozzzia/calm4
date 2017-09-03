@@ -1,6 +1,8 @@
 package org.calm4.quotes
 
 import scala.concurrent.Future
+import CalmImplicits._
+import org.calm4.quotes.Calm4Http._
 import Calm4._
 
 case class Applicant_(id: String, name: String = "", familyName: String = "",

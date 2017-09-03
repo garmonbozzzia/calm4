@@ -3,7 +3,7 @@ package org.calm4.quotes
 import fastparse.all._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
-import org.calm4.quotes.Calm4._
+import org.calm4.quotes.CalmImplicits._
 import org.calm4.quotes.CalmModel.GetCourse
 import org.calm4.quotes.CalmModel2.{ApplicantJsonRecord, CourseData, Participant}
 import org.calm4.quotes.Utils._

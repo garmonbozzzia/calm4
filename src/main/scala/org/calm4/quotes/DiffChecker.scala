@@ -3,7 +3,7 @@ package org.calm4.quotes
 import akka.stream.scaladsl.Source
 import org.calm4.quotes.CalmModel.GetCourse
 import org.calm4.quotes.CalmModel2.{CourseData, Id}
-import Calm4._
+import CalmImplicits._
 import Utils._
 import scala.concurrent.duration._
 import CachedWithFile._

@@ -8,7 +8,7 @@ import org.json4s.DefaultFormats
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import Utils._
 
-trait CalmImplicits {
+object CalmImplicits {
   implicit val system = ActorSystem()
   implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
 
