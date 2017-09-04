@@ -75,8 +75,13 @@ object CalmModel2 {
                         user_can_assign_hall_position: Boolean, sitting: MaleFemaleSittings,
                         serving: MaleFemaleServing) {
     //добавить сортировку TODO
-    lazy val all = serving.female ++ serving.male ++ sitting.male.old ++
-      sitting.male.`new` ++ sitting.female.`new` ++ sitting.female.old
+    implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
+    lazy val all = sitting.male.`new`.sorted ++
+      sitting.male.old.sorted ++
+      sitting.female.`new`.sorted ++
+      sitting.female.old.sorted ++
+      serving.male.sorted ++
+      serving.female.sorted
   }
 
 }

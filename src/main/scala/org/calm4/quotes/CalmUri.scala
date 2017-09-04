@@ -16,7 +16,7 @@ object CalmUri {
     case GetCourseList() => coursesUri()
     case GetInbox() => inboxUri
     case GetCourse(id) => courseUri(id)
-    //case GetParticipant(id, courseId) => applicationUri(id,courseId)
+    case GetParticipant(id, courseId) => applicationUri(id,courseId)
     case GetConversation(participantId) => conversationUri(participantId)
     case GetMessage(id, participantId ) => messageUri(id, participantId)
     case GetReflist(participantId) => reflistUri(participantId)

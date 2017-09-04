@@ -18,6 +18,11 @@ object Utils {
       f(obj)
       obj
     }
+
+    def *>>[B](f: => B): A = {
+      f
+      obj
+    }
   }
 
   implicit class SideEffectable2[A,B] (val f: A=>B) extends AnyVal {

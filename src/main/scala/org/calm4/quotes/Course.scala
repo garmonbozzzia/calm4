@@ -3,7 +3,7 @@ package org.calm4.quotes
 import scala.concurrent.Future
 import CalmImplicits._
 import org.calm4.quotes.Calm4Http._
-import Calm4._
+import Calm4Old._
 
 case class Applicant_(id: String, name: String = "", familyName: String = "",
                       occupation: String, town: String, province: String)
@@ -23,5 +23,6 @@ case class Course(startsAt: String, endsAt: String, link: String){
 
 object Course {
   def apply(link: String, data: List[String]): Course = new Course(data(0), data(1), link)
-  val all: List[Course] = courses
+  //val all: List[Course] = courses
+  val all: List[Course] = ???
 }

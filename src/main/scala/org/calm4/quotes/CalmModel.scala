@@ -20,13 +20,13 @@ object CalmModel {
   case class Course(id: Id)
 
   trait CalmRequest
-  case class GetCourseList() extends CalmRequest
-  case class GetInbox() extends CalmRequest
-  case class GetCourse(id: Id ) extends CalmRequest
-  case class GetParticipant(id: Id, courseId: Id ) extends CalmRequest
-  case class GetConversation(participantId: Id) extends CalmRequest
-  case class GetMessage(id: Id , participantId: Id ) extends CalmRequest
-  case class GetReflist(participantId: Id) extends CalmRequest
+  case class GetCourseList() extends CalmRequest // /courses
+  case class GetInbox() extends CalmRequest // inbox
+  case class GetCourse(id: Id ) extends CalmRequest // c2545 c2545[_fm][_nos][_mwi]
+  case class GetParticipant(id: Id, courseId: Id ) extends CalmRequest // /c2545a165453
+  case class GetConversation(participantId: Id) extends CalmRequest // a165453m
+  case class GetMessage(id: Id , participantId: Id ) extends CalmRequest // a165453m8767865
+  case class GetReflist(participantId: Id) extends CalmRequest //a165453r
   case class GetSearchResult(search: String) extends CalmRequest
 
   trait CalmResponse
@@ -101,7 +101,6 @@ object CalmSearchTest extends App {
 
 
 object CalmModelTest extends App {
-
   //load(GetCourse(2479.toString)).onComplete(_.trace)
 
   val l1 = browser.parseString("<a class='category-link' href='/en/courses/2527/course_applications/169275/edit#ref_list'>New</a>")
@@ -122,3 +121,4 @@ object CalmModelTest extends App {
     "Russian"
   )
 }
+

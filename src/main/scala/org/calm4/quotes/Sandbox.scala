@@ -3,7 +3,7 @@ package org.calm4.quotes
 import java.nio.file.{Files, Paths}
 
 import akka.stream.scaladsl.{Sink, Source}
-import Calm4._
+import Calm4Old._
 import org.calm4.quotes.Calm4Http._
 import org.calm4.quotes.CalmImplicits._
 import org.calm4.quotes.Utils._
@@ -40,7 +40,7 @@ object TestData {
   lazy val app1ExampleUri = "https://calm.dhamma.org/en/courses/2528/course_applications/166012/edit"
   lazy val courseExampleUri1 = "https://calm.dhamma.org/en/courses/2528/course_applications"
   lazy val app1ExamplePage = loadPage(app1ExampleUri).map(_.trace)
-  lazy val app1Example: Future[Applicant_] = app1ExamplePage.map(x => Calm4.parseApplicant(x)).map(_.trace)
+  lazy val app1Example: Future[Applicant_] = app1ExamplePage.map(x => Calm4Old.parseApplicant(x)).map(_.trace)
 
   def telegramView(app: Applicant_): String = s"*${app.familyName} ${app.name}*\n${app.town} _${app.province}_\n${app.occupation}"
   lazy val app1TelegramViewExample = app1Example.map(telegramView)

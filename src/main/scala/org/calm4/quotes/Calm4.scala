@@ -25,6 +25,14 @@ object Calm4Http{
       data <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
     } yield browser.parseString(data.utf8String)
 
+  def loadPage_(uri: Uri): Future[String] =
+    for {
+      auth <- Authentication.cookie
+      request = Get(uri).addHeader(auth)
+      response <- Http().singleRequest(request)
+      data <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+    } yield data.utf8String
+
   def loadJson(uri: Uri): Future[String] =
     for {
       auth <- Authentication.cookie
@@ -46,9 +54,4 @@ object Calm4Http{
     responce <- Http().singleRequest(req)
     _ <- responce.entity.dataBytes.runWith(FileIO.toPath(Paths.get(filePath)))
   } yield filePath
-}
-
-import Calm4Http._
-object Calm4 extends Calm4Old {
-  def getAppUrls(courseUrl: String): Future[List[String]] = loadPage(courseUrl).map(parseApplicantList)
 }

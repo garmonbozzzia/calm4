@@ -1,10 +1,12 @@
 package org.calm4.quotes
 
 import java.nio.charset.StandardCharsets
+
 import org.calm4.quotes.Calm4Http._
 import org.calm4.quotes.CalmModel._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+
 import scala.concurrent.Future
 import scala.util.Try
 import scalaz.Scalaz._
@@ -12,6 +14,8 @@ import scala.concurrent.ExecutionContext.Implicits._
 import org.calm4.quotes.Utils._
 import CalmUri._
 import java.nio.file.{Files, Paths}
+
+import net.ruippeixotog.scalascraper.model.Document
 
 class MapCache[K,T]() {
   val cache = scala.collection.mutable.Map.empty[K,(Long, T)]
@@ -35,9 +39,10 @@ object CachedWithFile {
     //.map(_.traceWith(_ => s"Loaded: $req"))
   private def save(req: Any, data: String) =
     Files.write(Paths.get(path(req)).traceWith(x => s"Saved: $x"), data.getBytes(StandardCharsets.UTF_8))
-  def get[K](req: K, force: Boolean, factory: K => Future[String]): Future[String] =
+  def get_[K](req: K, force: Boolean, factory: K => Future[String]): Future[String] =
     (!force ? load(req) | None).fold{ factory(req)
       .map { _ *> (save(req, _)) } }(Future(_))
   def get[T](req: CalmRequest, force: Boolean = false)(implicit m: Manifest[T]): Future[T] =
-    get(req, force, CalmUri.uri andThen loadJson).map(parse(_).extract[T])
+    get_(req, force, CalmUri.uri andThen loadJson).map(parse(_).extract[T])
+  def getPage(req: CalmRequest, force: Boolean = false) = get_(req, force, CalmUri.uri andThen loadPage_)
 }
