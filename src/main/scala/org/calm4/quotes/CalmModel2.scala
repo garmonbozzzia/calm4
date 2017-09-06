@@ -26,7 +26,6 @@ object CalmModel2 {
     lazy val courses: List[Course] = ???
   }
 
-  case class CourseRecord()
 
   case class Course(id: Id) {
 

@@ -27,9 +27,9 @@ object DiffChecker {
 
   class DiffChecker(ids: Seq[Id], timeout: FiniteDuration ) {
     private def reqsNew = Source.fromIterator(() => ids.map(GetCourse).iterator)
-      .mapAsync(2)(get[CourseData](_, force = true)).runFold(Seq.empty[CourseData])(_ :+ _ )
+      .mapAsync(2)(get[CourseData](_, _ => true)).runFold(Seq.empty[CourseData])(_ :+ _ )
     private def reqsOld = Source.fromIterator(() => ids.map(GetCourse).iterator)
-      .mapAsync(2)(get[CourseData](_)).runFold(Seq.empty[CourseData])(_ :+ _ )
+      .mapAsync(2)(get[CourseData](_, _ => false)).runFold(Seq.empty[CourseData])(_ :+ _ )
     def changeSource: Source[Seq[Diff], Cancellable] = Source.tick(0 seconds, timeout, ids )
       .map(_.traceWith(_ => "Start"))
       .mapAsync(1)(_ =>

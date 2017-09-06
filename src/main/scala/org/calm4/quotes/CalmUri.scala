@@ -3,6 +3,7 @@ package org.calm4.quotes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import org.calm4.quotes.CalmModel._
+import Utils._
 
 /**
   * Created by yuri on 26.08.17.
@@ -18,7 +19,7 @@ object CalmUri {
     case GetCourse(id) => courseUri(id)
     case GetParticipant(id, courseId) => applicationUri(id,courseId)
     case GetConversation(participantId) => conversationUri(participantId)
-    case GetMessage(id, participantId ) => messageUri(id, participantId)
+    case GetMessage(id, participantId ) => messageUri(id, participantId).trace
     case GetReflist(participantId) => reflistUri(participantId)
     case GetSearchResult(s) => searchUri(s)
   }
@@ -71,18 +72,18 @@ object CalmUri {
   "order[0][column]" -> "0",
   "order[0][dir]" -> "asc",
   "start" -> "0",
-  "length" -> "100",
+  "length" -> "500",
   "search[value]" -> "",
   "search[regex]" -> "false",
   "user_custom_search[length]" -> "100",
   "user_custom_search[start]" -> "0",
   "user_custom_search[operator_start_date]" -> "gte_date",
-  "user_custom_search[criterion_start_date]" -> startDate,
+//  "user_custom_search[criterion_start_date]" -> startDate,
   "user_custom_search[operator_course_type_id]" -> "eq",
   "user_custom_search[filterOnMyCoursesOnly]" -> "false",
   "user_custom_search[defaultCurrentDate]" -> "true",
   "user_custom_search[context]" -> "all_courses"
-  ))
+  )).trace
 
   def conversationUri(appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/conversation_datatable")
     .withQuery(
