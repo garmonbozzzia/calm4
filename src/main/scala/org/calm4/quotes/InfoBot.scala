@@ -29,7 +29,7 @@ object InfoBot extends TelegramBot
   )))
   val numOfItems = 20
   val course = CachedWithFile.get[CourseData](GetCourse(2535))
-  val students: Future[List[String]] = course.map(x => x.all.map{ x =>
+  val students: Future[Seq[String]] = course.map(x => x.all.map{ x =>
     s"${x.applicant_family_name} ${x.applicant_given_name}"
   })
 

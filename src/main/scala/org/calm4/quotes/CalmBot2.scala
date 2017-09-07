@@ -14,6 +14,8 @@ import org.calm4.quotes.CommandParser._
 import Utils._
 import CachedWithFile._
 
+import Calm4._
+
 object CalmBot2 extends TelegramBot
   with Polling
   with Commands
@@ -68,7 +70,9 @@ object CalmBot2 extends TelegramBot
   import scala.concurrent.duration._
 
   onCommand('inbox) { implicit msg =>
-    DiffChecker.source(Seq(2526, 2532, 2481, 2537, 2534, 2330, 2528, 2484), 10 minutes)
+    for{ courses <- Calm4.courseList.map(_.courses.map(_.id))}
+    //DiffChecker.source(Seq(2526, 2532, 2481, 2537, 2534, 2330, 2528, 2484), 10 minutes)
+    DiffChecker.source(courses, 10 minutes)
       .map(_.to[scala.collection.immutable.Seq])
       .mapConcat[Diff](x => x)
       .throttle(1, 1.5 seconds, 1, ThrottleMode.Shaping)
@@ -80,17 +84,10 @@ object CalmBot2 extends TelegramBot
   onMessage { implicit msg =>
     for (msgText <- msg.text)
       CommandParser.parse(msgText).trace match {
-        case AllCoursesTm() =>
-          //reply(Seq(2526, 2532, 2481, 2537, 2534, 2330, 2528, 2484).map(id => s"/c$id").mkString("\n"))
-          val text = CachedWithFile.getJson(GetCourseList())
-            .map(_.map(x => Parsers.CourseRecord(x)))
-            .map(Parsers.CourseList(_).actual)
-            .map(_.tmReply)
-            //.map(_.map(_).map(_.tmView).)
-
+        case AllCoursesTm() => val text = Calm4.courseList.map(_.tmReply)
         case CourseTm(cId) =>
           Source.fromFuture(get[CourseData](GetCourse(cId.trace)).map(_.traceWith(_.start_date)))
-            .map(_.all.trace.grouped(25).to[scala.collection.immutable.Seq])
+            .map(_.all.grouped(25).to[scala.collection.immutable.Seq])
             .mapConcat[Seq[ApplicantJsonRecord]](x => x)
             .map(_.map(x => ApplicantJsonRecordTm(x, cId).view1.trace).mkString("\n"))
             .mapAsync(1)(reply(_, parseMode = Some(ParseMode.Markdown)))

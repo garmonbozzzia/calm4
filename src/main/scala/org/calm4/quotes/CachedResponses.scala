@@ -40,8 +40,8 @@ object CachedWithFile {
   private def duration(path: String) = (System.currentTimeMillis - new File(path).lastModified()).millis
 
   def update5minutes(req: Any) = duration(path(req)).gt(req match {
-    case GetCourseList() => 10 minutes
-    case GetCourse(_) => 5 minutes
+    case GetCourseList() => Duration.Inf
+    case GetCourse(_) => Duration.Inf
     case GetParticipant(_, _) => 5 minutes
     case GetConversation(_) => (10 seconds).traceWith{_ => duration(path(req)).toUnit(TimeUnit.MINUTES)}
     case GetMessage(_, _) => 5 minutes
