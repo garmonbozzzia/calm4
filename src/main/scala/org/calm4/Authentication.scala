@@ -1,13 +1,14 @@
-package org.calm4.quotes
+package org.calm4
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
 import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-import org.calm4.quotes.CalmImplicits._
-import org.calm4.quotes.Utils._
-import scalaz.Scalaz._
+import org.calm4.CalmImplicits._
+import Utils._
+
 import scala.concurrent.Future
+import scalaz.Scalaz._
 
 object Authentication {
 
@@ -35,8 +36,6 @@ object Authentication {
 }
 
 object SignInTest extends App {
-  import Calm4._
-  import Utils._
   for{
     auth <- Authentication.cookie.trace
     result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))

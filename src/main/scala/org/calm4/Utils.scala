@@ -1,4 +1,4 @@
-package org.calm4.quotes
+package org.calm4
 
 object Utils {
   implicit class Tracable[A] (val obj: A) extends AnyVal {

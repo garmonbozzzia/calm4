@@ -1,9 +1,9 @@
-package org.calm4.quotes
+package org.calm4
 
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
+import org.calm4.Utils._
 import org.calm4.quotes.CalmModel._
-import Utils._
 
 /**
   * Created by yuri on 26.08.17.
@@ -20,6 +20,7 @@ object CalmUri {
     case GetParticipant(id, courseId) => applicationUri(id,courseId)
     case GetConversation(participantId) => conversationUri(participantId)
     case GetMessage(id, participantId ) => messageUri(id, participantId).trace
+    case GetNote(id, participantId ) => noteUri(id, participantId).trace
     case GetReflist(participantId) => reflistUri(participantId)
     case GetSearchResult(s) => searchUri(s)
   }
@@ -35,6 +36,7 @@ object CalmUri {
 
   def searchUri(s: String): Uri = host.withPath("/en/course_applications/search").withQuery(Query("typeahead" -> s))
   def messageUri(msgId: Int, appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/messages/$msgId")
+  def noteUri(msgId: Int, appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/notes/$msgId")
 
   def applicationUri(appId: Id, courseId: Id): Uri =
     host.withPath(s"/en/courses/$courseId/course_applications/$appId/edit")
@@ -52,9 +54,8 @@ object CalmUri {
 
   def courseUri(id: Int): Uri = host.withPath(s"/en/courses/$id/course_applications")
 
-  lazy val inboxUri: Uri = host
-    .withPath("/en/course_applications/inbox")
-    .withQuery(columnParams(8) ++ Seq(
+  lazy val inboxUri: Uri =
+    host.withPath("/en/course_applications/inbox").withQuery(columnParams(8) ++ Seq(
       "draw" -> "1",
       "order[0][column]" -> "1",
       "order[0][dir]" -> "asc",
@@ -68,26 +69,26 @@ object CalmUri {
     )
   )
 
-  def coursesUri(startDate: String = "2017-8-01"): Uri = host.withPath("/en/courses").withQuery(columnParams(10) ++ Seq (
-  "order[0][column]" -> "0",
-  "order[0][dir]" -> "asc",
-  "start" -> "0",
-  "length" -> "500",
-  "search[value]" -> "",
-  "search[regex]" -> "false",
-  "user_custom_search[length]" -> "100",
-  "user_custom_search[start]" -> "0",
-  "user_custom_search[operator_start_date]" -> "gte_date",
-//  "user_custom_search[criterion_start_date]" -> startDate,
-  "user_custom_search[operator_course_type_id]" -> "eq",
-  "user_custom_search[filterOnMyCoursesOnly]" -> "false",
-  "user_custom_search[defaultCurrentDate]" -> "true",
-  "user_custom_search[context]" -> "all_courses"
-  )).trace
+  def coursesUri(startDate: String = "2017-8-01"): Uri =
+    host.withPath("/en/courses").withQuery(columnParams(10) ++ Seq (
+      "order[0][column]" -> "0",
+      "order[0][dir]" -> "asc",
+      "start" -> "0",
+      "length" -> "500",
+      "search[value]" -> "",
+      "search[regex]" -> "false",
+      "user_custom_search[length]" -> "100",
+      "user_custom_search[start]" -> "0",
+      "user_custom_search[operator_start_date]" -> "gte_date",
+    //  "user_custom_search[criterion_start_date]" -> startDate,
+      "user_custom_search[operator_course_type_id]" -> "eq",
+      "user_custom_search[filterOnMyCoursesOnly]" -> "false",
+      "user_custom_search[defaultCurrentDate]" -> "true",
+      "user_custom_search[context]" -> "all_courses"
+      )).trace
 
   def conversationUri(appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/conversation_datatable")
-    .withQuery(
-      columnParams(8) ++ Seq(
+    .withQuery( columnParams(8) ++ Seq(
         "order[0][column]" -> "0",
         "order[0][dir]" -> "asc",
         "start" -> "0",

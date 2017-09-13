@@ -1,26 +1,28 @@
 package org.calm4.quotes
 
 import org.calm4.quotes.CalmModel.CalmResponse
-import scala.concurrent.Future
-import Utils._
-import CalmImplicits._
 
-/**
-  * Created by yuri on 01.09.17.
-  */
+import scala.concurrent.Future
+import org.calm4.Utils._
+import org.calm4.CalmImplicits._
+import org.calm4.quotes.CalmModel2.ApplicantJsonRecord
+
+
+
+
 object CalmModel2 {
   type Id = Int
 
-  case object Inbox {
-    def data: Future[CalmResponse] = ???
-
-    def messages: Seq[MessageRecord] = ???
-  }
-
-  case class MessageRecord(data: List[String]) {
-    lazy val conversationData: Future[CalmResponse] = ???
-    lazy val message: Future[Message] = ???
-  }
+//  case object Inbox {
+//    def data: Future[CalmResponse] = ???
+//
+//    def messages: Seq[MessageRecord] = ???
+//  }
+//
+//  case class MessageRecord(data: List[String]) {
+//    lazy val conversationData: Future[CalmResponse] = ???
+//    lazy val message: Future[Message] = ???
+//  }
 
   case class CourseList() {
     lazy val courses: List[Course] = ???
@@ -31,21 +33,21 @@ object CalmModel2 {
 
   }
 
-  case class Conversation(participant: Participant) {
-    lazy val messages: Future[Seq[Message]] = ???
-  }
+//  case class Conversation(participant: Participant) {
+//    lazy val messages: Future[Seq[Message]] = ???
+//  }
 
   case class ParticipantRecord()
 
   case class Participant(id: Id, courseId: Id)
 
-  case class Message(id: Id, participant: Participant) {
-    lazy val conversationData: Future[CalmResponse] = ???
-    lazy val messageRecordData: Future[List[String]] = ???
-    lazy val messageData: Future[CalmResponse] = ???
-    lazy val text: Future[String] = ???
-    lazy val details: Future[String] = ???
-  }
+//  case class Message(id: Id, participant: Participant) {
+//    lazy val conversationData: Future[CalmResponse] = ???
+//    lazy val messageRecordData: Future[List[String]] = ???
+//    lazy val messageData: Future[CalmResponse] = ???
+//    lazy val text: Future[String] = ???
+//    lazy val details: Future[String] = ???
+//  }
 
 
   object ApplicantRecord {
@@ -73,8 +75,8 @@ object CalmModel2 {
   case class CourseData(course_id: Id, venue_name: String, start_date: String, end_date: String,
                         user_can_assign_hall_position: Boolean, sitting: MaleFemaleSittings,
                         serving: MaleFemaleServing) {
-    //добавить сортировку TODO
     implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
+
     lazy val all = sitting.male.`new`.sorted ++
       sitting.male.old.sorted ++
       sitting.female.`new`.sorted ++

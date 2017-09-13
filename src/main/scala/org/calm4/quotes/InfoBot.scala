@@ -7,7 +7,7 @@ import info.mukel.telegrambot4s.models.{InlineKeyboardButton, InlineKeyboardMark
 import org.calm4.quotes.CalmBot.{cache, onCallbackWithTag, request}
 import org.calm4.quotes.CalmModel._
 import org.calm4.quotes.CalmModel2.CourseData
-import org.calm4.quotes.Utils._
+import org.calm4.Utils._
 
 import scala.concurrent.Future
 import scala.util.Random

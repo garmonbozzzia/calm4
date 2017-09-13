@@ -1,6 +1,7 @@
 package org.calm4.quotes
 
 import java.nio.file.Paths
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.model.Uri
@@ -8,8 +9,10 @@ import akka.http.scaladsl.model.headers._
 import akka.stream.scaladsl.FileIO
 import akka.util.ByteString
 import net.ruippeixotog.scalascraper.model.Document
+import org.calm4.Authentication
+
 import scala.concurrent.Future
-import CalmImplicits._
+import org.calm4.CalmImplicits._
 
 object Calm4Http{
   val accept = RawHeader("Accept", "application/json, text/javascript, */*; q=0.01")
@@ -41,6 +44,9 @@ object Calm4Http{
       data <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
     } yield data.utf8String
 
+
+
+
   def savePage(uri: String, filePath: String): Future[String] = for {
     auth <- Authentication.cookie
     req = Get(uri).addHeader(auth)
@@ -54,4 +60,9 @@ object Calm4Http{
     responce <- Http().singleRequest(req)
     _ <- responce.entity.dataBytes.runWith(FileIO.toPath(Paths.get(filePath)))
   } yield filePath
+}
+
+
+object PostExample extends App {
+  //Http().singleRequest(Get)
 }

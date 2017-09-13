@@ -5,10 +5,11 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
+import org.calm4.CalmUri
 import org.calm4.quotes.Calm4Http._
 import org.calm4.quotes.CalmModel._
-import org.calm4.quotes.CalmUri._
-import org.calm4.quotes.Utils._
+import org.calm4.CalmUri._
+import org.calm4.Utils._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
@@ -54,6 +55,7 @@ object CachedWithFile {
     case GetParticipant(aId, cId) => s"c${cId}a$aId"
     case GetConversation(aId) => s"a${aId}m"
     case GetMessage(mId, aId) => s"a${aId}m$mId"
+    case GetNote(nId, aId) => s"a${aId}n$nId"
     case _ => req.hashCode()
   }}.json"
   private def load(req: Any) = Try(scala.io.Source.fromFile(path(req)).mkString).toOption
@@ -61,17 +63,18 @@ object CachedWithFile {
     Files.write(Paths.get(path(req))//.traceWith(x => s"Saved: $x")
       , data.getBytes(StandardCharsets.UTF_8))
   def get_[K](req: K, updateCondition: Any => Boolean, factory: K => Future[String]): Future[String] =
-    (!updateCondition(req).trace ? load(req) | None).fold{ factory(req).traceWith(_ => "Update cache")
+    (!updateCondition(req) ? load(req) | None).fold{ factory(req).traceWith(_ => "Update cache")
       .map { _ *> (save(req, _)) } }(Future(_))
   def get[T](req: CalmRequest, updateCondition: Any => Boolean = update5minutes)(implicit m: Manifest[T]): Future[T] =
-    get_(req, updateCondition, CalmUri.uri andThen loadJson).map(parse(_).extract[T])
-  def getJson(req: CalmRequest, updateCondition: Any => Boolean = update5minutes): Future[Seq[Seq[String]]] =
-    get_(req, updateCondition, CalmUri.uri andThen loadJson)
-      .map(x => (parse(x.trace).trace \ "data").extract[Seq[Seq[String]]])
+    get_(req, updateCondition, CalmUri.uri andThen loadJson).map(x => parse(x).extract[T])
+  def getDataJson(req: CalmRequest, updateCondition: Any => Boolean = update5minutes): Future[Seq[Seq[String]]] =
+    getJson(req, updateCondition).map(x => (x \ "data").extract[Seq[Seq[String]]])
+  def getJson(req: CalmRequest, updateCondition: Any => Boolean = update5minutes): Future[JValue] =
+    get_(req, updateCondition, CalmUri.uri andThen loadJson).map(x => parse(x))
   def getPage(req: CalmRequest, force: Boolean = false) = get_(req, _ => force, CalmUri.uri andThen loadPage_)
 }
 object CreationTime extends App {
-  import Utils._
+  import org.calm4.Utils._
   (110 minute).toMillis.trace
   //FiniteDuration(10, )
   (System.currentTimeMillis - new File("data/sessionId").lastModified()).millis.toUnit(TimeUnit.HOURS).trace

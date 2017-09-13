@@ -2,7 +2,7 @@ package org.calm4.quotes
 
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Query
-import org.calm4.quotes.Utils._
+import org.calm4.Utils._
 import Calm4Http._
 
 object UriTest extends App{

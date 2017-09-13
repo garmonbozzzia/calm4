@@ -6,7 +6,7 @@ import info.mukel.telegrambot4s.methods.{EditMessageText, ParseMode}
 import info.mukel.telegrambot4s.models._
 import org.calm4.quotes.CalmModel._
 import org.calm4.quotes.Calm4._
-import org.calm4.quotes.Utils._
+import org.calm4.Utils._
 
 object CalmBot extends TelegramBot
   with Polling

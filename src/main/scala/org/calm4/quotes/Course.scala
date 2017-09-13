@@ -1,7 +1,7 @@
 package org.calm4.quotes
 
 import scala.concurrent.Future
-import CalmImplicits._
+import org.calm4.CalmImplicits._
 import org.calm4.quotes.Calm4Http._
 import Calm4Old._
 

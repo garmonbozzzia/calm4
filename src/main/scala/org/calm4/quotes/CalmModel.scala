@@ -6,7 +6,8 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
 import org.calm4.quotes.Calm4Http._
-import org.calm4.quotes.CalmImplicits._
+import org.calm4.CalmImplicits._
+import org.calm4.CalmUri
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
@@ -26,6 +27,7 @@ object CalmModel {
   case class GetParticipant(id: Id, courseId: Id ) extends CalmRequest // /c2545a165453
   case class GetConversation(participantId: Id) extends CalmRequest // a165453m
   case class GetMessage(id: Id , participantId: Id ) extends CalmRequest // a165453m8767865
+  case class GetNote(nId: Id, aId: Id) extends CalmRequest // a165453n8767865
   case class GetReflist(participantId: Id) extends CalmRequest //a165453r
   case class GetSearchResult(search: String) extends CalmRequest
 
@@ -88,7 +90,7 @@ object CalmModel {
 }
 
 import org.calm4.quotes.CalmModel._
-import org.calm4.quotes.Utils._
+import org.calm4.Utils._
 object CalmSearchTest extends App {
   load(GetSearchResult("B"))
     .map(_.trace)

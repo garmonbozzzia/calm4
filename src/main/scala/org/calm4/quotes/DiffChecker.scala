@@ -3,8 +3,8 @@ package org.calm4.quotes
 import akka.stream.scaladsl.Source
 import org.calm4.quotes.CalmModel.GetCourse
 import org.calm4.quotes.CalmModel2.{CourseData, Id}
-import CalmImplicits._
-import Utils._
+import org.calm4.CalmImplicits._
+import org.calm4.Utils._
 import scala.concurrent.duration._
 import CachedWithFile._
 import akka.actor.Cancellable
