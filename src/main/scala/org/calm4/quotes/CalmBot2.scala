@@ -16,7 +16,9 @@ import org.calm4.CommandParser._
 import org.calm4.Utils._
 import CachedWithFile._
 import Calm4._
-import org.calm4.{CalmUri, CommandParser}
+import CalmModel._
+import org.calm4.{CalmModel3, CalmUri, CommandParser, TmSymbolMap}
+//import org.calm4.CalmModel3._
 
 import scala.concurrent.Future
 
@@ -40,6 +42,8 @@ object CalmBot2 extends TelegramBot
   with InlineQueries {
   def token: String = scala.io.Source.fromFile("data/BotToken").getLines().mkString
 
+  import CalmModel2.CourseData
+  import Parsers.CourseRecord
   def replyMarkup(courseData: CourseData) = None
 
   implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd

@@ -18,7 +18,7 @@ object InfoBot extends TelegramBot
   with Callbacks
   with InlineQueries {
 
-  case class PageAndId(id: Id, courseId: Id, page: Int)
+  case class PageAndId(id: Int, courseId: Int, page: Int)
 
   def token = scala.io.Source.fromFile("data/BotToken").getLines().mkString
 

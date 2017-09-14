@@ -2,6 +2,7 @@ package org.calm4
 
 import org.calm4.CalmImplicits._
 import org.calm4.Utils._
+import org.calm4.sandbox.{CalmView}
 
 // имеем исходный запрос => jnghfdkztv pfghjc => получаем строку json/html => из строки парсим структуру данных => получаем набор объектов модели
 // => из структуры данных можем сформировать новые запросы
@@ -9,27 +10,55 @@ import org.calm4.Utils._
 // из него можно получить объект /c2453 /a165453m /a165453r
 // каждый объект может быть детализирован(как это реализовать?) в виде trait
 
-object CalmModel3 extends CalmModelTraits {
-  object Courses extends Courses
-  case class CourseId(val cId: Int) extends Course
-  case class ApplicantId(aId: Int) extends ApplicantIdT
-  case class ApplicantIdF(aId: ApplicantId, cId: CourseId) extends Applicant2IdT
-  case class MessageId(mId: Int, aId: ApplicantIdT) extends MessageIdT
-  case class CourseRecord(cId: CourseId, start: String, end: String,
+
+trait Commands {
+  case class AllCoursesTm() extends TmCommand
+  case class CourseTm(cId: Int) extends TmCommand
+  //case class FilteredCourseTm(id: Int, g: Some[Boolean],  )
+  case class ApplicantTm(cId: Int, aId: Int ) extends TmCommand
+  case class ReflistTm(aId: Int) extends TmCommand
+  case class MessagesTm(aId: Int) extends TmCommand
+  case class MessageTm(aId: Int, mId: Int) extends TmCommand
+  case class NoteTm(aId: Int, nId: Int) extends TmCommand
+  case class UndefinedTm(cmd: String) extends TmCommand
+}
+
+trait CalmRequests {
+  trait CalmRequest
+  case class GetCourseList() extends CalmRequest // /courses
+  case class GetInbox() extends CalmRequest // inbox
+  case class GetCourse(id: Int ) extends CalmRequest // c2545 c2545[_fm][_nos][_mwi]
+  case class GetParticipant(id: Int, courseId: Int ) extends CalmRequest // /c2545a165453
+  case class GetConversation(participantId: Int) extends CalmRequest // a165453m
+  case class GetMessage(id: Int , participantId: Int ) extends CalmRequest // a165453m8767865
+  case class GetNote(nId: Int, aId: Int) extends CalmRequest // a165453n8767865
+  case class GetReflist(participantId: Int) extends CalmRequest //a165453r
+  case class GetSearchResult(search: String) extends CalmRequest
+}
+
+trait CalmData {
+  case class CourseRecord(cId: Int, start: String, end: String,
                           cType: String, venue: String, status: String)
-  case class CourseList(courses: Seq[CourseRecord])
-  case class CourseInfo(val courseId: Int, venue: String, startDate: String, endDate: String)
+  case class CourseList(courses: Seq[CourseRecord]) extends CalmView
+  case class CourseInfo(courseId: Int, venue: String, startDate: String, endDate: String)
   case class CourseData(courseInfo: CourseInfo, applicants: Seq[ApplicantRecord])
-  case class ApplicantRecord(aId: Int, cId: Int, displayId: String, state: String, givenName: String,
-                             familyName: String, sat: Int, served: Int, age: Int, ons: String,
-                             gender: String, pregnant: Boolean)
-  case class ConversationList(applicant: ApplicantId, messages: List[MessageRecord])
-  case class MessageRecord(mId: Int, aId: ApplicantId, date: String,
-                           d1: Int, d2: Int, applicant: String,
-                           email: String, received: String, msgType: String,
-                           urlType: String = "messages") extends MessageIdT
+  case class ApplicantRecord(aId: Int, cId: Int, displayId: String, state: String,
+                             givenName: String,familyName: String, sat: Int, served: Int,
+                             age: Int, ons: String, gender: String, pregnant: Boolean)
+  case class ConversationList(aId: Int, messages: List[MessageRecord])
+  case class MessageRecord(mId: Int, aId: Int, date: String, d1: Int, d2: Int, applicant: String,
+                           email: String, received: String, msgType: String,urlType: String = "messages")
   case class InboxRecord()
 }
+
+object CalmModel3 extends Commands with CalmData with CalmRequests {
+  object Courses extends Courses
+  case class CourseId(cId: Int) extends Course with CalmView
+  case class ApplicantId(aId: Int)
+  case class ApplicantIdF(aId: Int, cId: Int)
+  case class MessageId(mId: Int, aId: Int)
+}
+
 //
 
 // Courses =F> List[CourseRecord]

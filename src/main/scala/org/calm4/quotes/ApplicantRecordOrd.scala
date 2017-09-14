@@ -1,5 +1,6 @@
 package org.calm4.quotes
 
+import org.calm4.TmSymbolMap
 import org.calm4.quotes.CalmModel2.ApplicantJsonRecord
 
 /**

@@ -2,7 +2,7 @@ package org.calm4
 
 import org.calm4.CalmModel3.{ApplicantRecord, CourseData, CourseId, CourseInfo}
 import org.calm4.quotes.CalmModel.GetCourse
-import org.calm4.quotes.{CachedWithFile, TmSymbolMap}
+import org.calm4.quotes.CachedWithFile
 import org.json4s.{JInt, JNull, JObject, JString, JValue}
 import CalmImplicits._
 

@@ -7,29 +7,19 @@ import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
 import org.calm4.quotes.Calm4Http._
 import org.calm4.CalmImplicits._
-import org.calm4.CalmUri
+import org.calm4.{CalmRequests, CalmUri}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.Future
 
 
-object CalmModel {
 
-  type Id = Int
-  case class Participant(id: Id, courseId: Id)
-  case class Course(id: Id)
+object CalmModel extends CalmRequests{
 
-  trait CalmRequest
-  case class GetCourseList() extends CalmRequest // /courses
-  case class GetInbox() extends CalmRequest // inbox
-  case class GetCourse(id: Id ) extends CalmRequest // c2545 c2545[_fm][_nos][_mwi]
-  case class GetParticipant(id: Id, courseId: Id ) extends CalmRequest // /c2545a165453
-  case class GetConversation(participantId: Id) extends CalmRequest // a165453m
-  case class GetMessage(id: Id , participantId: Id ) extends CalmRequest // a165453m8767865
-  case class GetNote(nId: Id, aId: Id) extends CalmRequest // a165453n8767865
-  case class GetReflist(participantId: Id) extends CalmRequest //a165453r
-  case class GetSearchResult(search: String) extends CalmRequest
+  case class Participant(id: Int, courseId: Int)
+  case class Course(id: Int)
+
 
   trait CalmResponse
   case class CalmHtml(document: Document) extends CalmResponse

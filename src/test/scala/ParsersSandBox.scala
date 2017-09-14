@@ -18,7 +18,7 @@ class TestModel extends CalmTest {
   import org.calm4.CalmModel3.{CourseList, _}
   whenReady( for {
     CourseList(courses) <- Courses.list
-    a <- courses(0).cId.data
+    a <- CourseId(courses(0).cId).data
   } yield {
     a.applicants.mkString("\n").trace
   }) {x => x}

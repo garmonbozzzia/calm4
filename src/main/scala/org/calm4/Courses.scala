@@ -5,15 +5,21 @@ import org.calm4.CalmModel3.{CourseList, CourseRecord}
 import org.calm4.quotes.CachedWithFile
 import org.calm4.quotes.CalmModel.GetCourseList
 import scala.concurrent.Future
+import Parsers._
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.dsl.DSL._
 import CalmImplicits._
 import Utils._
+import FastParse._
 
 trait Courses {
-  import FastParse._
-  import Parsers._
-  import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-  import net.ruippeixotog.scalascraper.dsl.DSL._
-  def parseCourseRecord: Seq[String] => Option[CourseRecord] = {
+
+  def list: Future[CourseList] =
+    CachedWithFile.getDataJson(GetCourseList())
+      .map(_.map(Parsers.parseCourseRecord).flatten)
+      .map(actual)
+
+  private def parseCourseRecord: Seq[String] => Option[CourseRecord] = {
     case Seq(htmlStart, end, cType, venue, _, status, registrars, _, _, _, _) =>
       val html = browser.parseString(htmlStart)
       for {
@@ -23,12 +29,9 @@ trait Courses {
     case x => x.trace; throw new Exception("error")
   }
 
-  def actual(courses: Seq[CourseRecord]) = CourseList( courses
+  private def actual(courses: Seq[CourseRecord]) = CourseList( courses
     .filter(x => Seq("10-Day", "1-DayOSC", "3-DayOSC").contains(x.cType))
     .filter(x => Seq("In Progress", "Tentative", "Scheduled" ).contains(x.status))
-    .filter(_.cId.cId != 0) )
-  def list: Future[CourseList] =
-    CachedWithFile.getDataJson(GetCourseList())
-      .map(_.map(Parsers.parseCourseRecord).flatten)
-      .map(actual)
+    .filter(_.cId != 0) )
+
 }

@@ -18,16 +18,16 @@ object Utils {
       f(obj)
       obj
     }
-
-    def *>>[B](f: => B): A = {
-      f
-      obj
-    }
+//
+//    def *>>[B](f: => B): A = {
+//      f
+//      obj
+//    }
   }
-
-  implicit class SideEffectable2[A,B] (val f: A=>B) extends AnyVal {
-    def >* : A => A = {x: A => f(x); x}
-  }
+//
+//  implicit class SideEffectable2[A,B] (val f: A=>B) extends AnyVal {
+//    def >* : A => A = {x: A => f(x); x}
+//  }
 
   implicit class Mapable (val cc: Any) extends AnyVal {
     def ccToMap: Map[String, Any] =

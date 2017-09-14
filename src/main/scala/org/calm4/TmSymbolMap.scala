@@ -1,4 +1,4 @@
-package org.calm4.quotes
+package org.calm4
 
 object TmSymbolMap{
   //val sortMap =
