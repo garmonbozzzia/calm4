@@ -7,15 +7,16 @@ import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
 import org.calm4.quotes.Calm4Http._
 import org.calm4.CalmImplicits._
-import org.calm4.{CalmRequests, CalmUri}
+import org.calm4.{CalmUri}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import org.calm4.CalmModel3._
 
 import scala.concurrent.Future
 
 
 
-object CalmModel extends CalmRequests{
+object CalmModel {
 
   case class Participant(id: Int, courseId: Int)
   case class Course(id: Int)

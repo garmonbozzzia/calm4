@@ -1,7 +1,7 @@
 package org.calm4.quotes
 
 import akka.stream.scaladsl.Source
-import org.calm4.quotes.CalmModel.{GetCourse, GetParticipant}
+import org.calm4.CalmModel3._
 import org.calm4.quotes.CalmModel2.{ApplicantJsonRecord, CourseData}
 import org.calm4.CalmImplicits._
 import org.calm4.Utils._

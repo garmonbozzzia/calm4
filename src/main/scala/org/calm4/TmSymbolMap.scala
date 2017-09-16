@@ -26,3 +26,8 @@ object TmSymbolMap{
   )
   val toTm: Map[String, String] = toTmSeq.toMap
 }
+
+object Symbols extends App {
+  println((32 to 64*1024).grouped(64).map(_.map(_.toChar).mkString).mkString("\n"))
+}
+

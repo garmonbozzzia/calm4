@@ -3,7 +3,7 @@ package org.calm4
 import org.calm4.CalmImplicits.browser
 import org.calm4.CalmModel3.{CourseList, CourseRecord}
 import org.calm4.quotes.CachedWithFile
-import org.calm4.quotes.CalmModel.GetCourseList
+import org.calm4.CalmModel3._
 import scala.concurrent.Future
 import Parsers._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
@@ -13,7 +13,9 @@ import Utils._
 import FastParse._
 
 trait Courses {
-
+  import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+  import net.ruippeixotog.scalascraper.dsl.DSL._
+  import Parsers._
   def list: Future[CourseList] =
     CachedWithFile.getDataJson(GetCourseList())
       .map(_.map(Parsers.parseCourseRecord).flatten)

@@ -4,6 +4,7 @@ import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
 import info.mukel.telegrambot4s.api.declarative.{Callbacks, Commands, InlineQueries}
 import info.mukel.telegrambot4s.methods.EditMessageText
 import info.mukel.telegrambot4s.models.{InlineKeyboardButton, InlineKeyboardMarkup, Message}
+import org.calm4.CalmModel3.GetCourse
 import org.calm4.quotes.CalmBot.{cache, onCallbackWithTag, request}
 import org.calm4.quotes.CalmModel._
 import org.calm4.quotes.CalmModel2.CourseData

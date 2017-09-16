@@ -1,17 +1,23 @@
 package org.calm4.sandbox
 
 import org.calm4.CalmModel3._
+import org.calm4.TmSymbolMap
 
 /**
   * Created by yuri on 14.09.17.
   */
-trait CalmView {
+object CalmView {
   //this: CalmModel3.CourseList =>
-  def console: String = this match {
+  def console: Any => String = {
+    case CourseRecord(cId, start, end, cType,venue,status) =>
+      f"$cId $start $end $cType%8s $status%11s $venue"
     case CourseList(courses) =>
       courses.zipWithIndex
-        .map{ case(x,i) => s"$i\t${x.cId} ${x.start} ${x.end} ${x.cType}\t ${x.status}\t ${x.venue}"}
+        .map{ case(x,i) => f"$i%3d ${console(x)}"}
         .mkString("\n")
-    case CourseId(cId) => ???
+    case ApplicantRecord(aId, cId, displayId, state, givenName, familyName, sat, served, age, ons, gender, pregnant) =>
+      f"$ons$gender $aId $age%2s $familyName%12s $givenName ${TmSymbolMap.toTm(state)}"
+    case CourseData(info, cs ) => cs.zipWithIndex.map{case(x,i) =>
+      f"${i}%3d ${console(x)}"}.mkString("\n")
   }
 }

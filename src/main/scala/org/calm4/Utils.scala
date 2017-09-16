@@ -1,9 +1,11 @@
 package org.calm4
 
 object Utils {
+  val printer = pprint.copy( additionalHandlers = {case x:String => pprint.Tree.Literal(x.toString)}, defaultHeight = 1000)
   implicit class Tracable[A] (val obj: A) extends AnyVal {
     def trace: A = {
-      println(obj)
+      //pprintln(obj)
+      printer.pprintln(obj)
       obj
     }
 

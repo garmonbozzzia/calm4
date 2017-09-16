@@ -6,6 +6,7 @@ import info.mukel.telegrambot4s.methods.{EditMessageText, ParseMode}
 import info.mukel.telegrambot4s.models._
 import org.calm4.quotes.CalmModel._
 import org.calm4.quotes.Calm4._
+import org.calm4.CalmModel3._
 import org.calm4.Utils._
 
 object CalmBot extends TelegramBot
@@ -65,7 +66,7 @@ object CalmBot extends TelegramBot
     }
   }
 
-
+  import org.calm4.quotes.CalmModel.InboxRecord
   onCommand('inbox) { implicit msg =>
     def toTelegram(ir: InboxRecord): String = {
       s"${

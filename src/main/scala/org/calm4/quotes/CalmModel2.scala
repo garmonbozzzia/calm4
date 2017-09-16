@@ -1,10 +1,9 @@
 package org.calm4.quotes
 
 import org.calm4.CalmImplicits._
-import org.calm4.Commands
 import org.calm4.Utils._
 
-object CalmModel2 extends Commands{
+object CalmModel2 {
 
   case class CourseList() {
     lazy val courses: List[Course] = ???

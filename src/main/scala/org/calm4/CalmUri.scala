@@ -3,7 +3,7 @@ package org.calm4
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import org.calm4.Utils._
-//import CalmModel3._
+import CalmModel3._
 import org.calm4.quotes.CalmModel._
 
 /**

@@ -1,6 +1,6 @@
 package org.calm4.quotes
 
-import org.calm4.quotes.CalmModel.GetCourseList
+import org.calm4.CalmModel3._
 import org.calm4.CalmImplicits._
 
 

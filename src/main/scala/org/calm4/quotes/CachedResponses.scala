@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 import org.calm4.CalmUri
 import org.calm4.quotes.Calm4Http._
-import org.calm4.quotes.CalmModel._
+import org.calm4.CalmModel3._
 import org.calm4.CalmUri._
 import org.calm4.Utils._
 import org.json4s._

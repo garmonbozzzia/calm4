@@ -6,6 +6,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.calm4.quotes.CachedWithFile.get
 import org.calm4.CalmImplicits._
+import org.calm4.CalmModel3._
 import org.calm4.Utils._
 
 import scala.concurrent.Future

@@ -20,9 +20,7 @@ object ConsoleClient extends App {
   Source.fromIterator(() => Iterator.continually(StdIn.readLine))
     .map(Command(_))
       .mapAsync(1)(_.execute)
-      .map {
-        case x: CourseList => x.console
-      }
+      .map (CalmView.console)
     .runForeach(_.trace)
   //Command("/c2345") execute {_.trace}
 

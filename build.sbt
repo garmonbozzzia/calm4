@@ -19,3 +19,12 @@ libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.4.4"
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.15"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.1"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+libraryDependencies += "com.lihaoyi" %% "pprint" % "0.5.3"
+
+libraryDependencies += "com.lihaoyi" % "ammonite" % "1.0.2" % "test" cross CrossVersion.full
+
+sourceGenerators in Test += Def.task {
+  val file = (sourceManaged in Test).value / "amm.scala"
+  IO.write(file, """object amm extends App { ammonite.Main().run() }""")
+  Seq(file)
+}.taskValue

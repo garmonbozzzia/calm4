@@ -19,8 +19,8 @@ trait TmCommand {
     case MessagesTm(aId) => s"/a${aId}m"
     case MessageTm(aId, mId) => s"/a${aId}m$mId"
     case NoteTm(aId, nId) => s"/a${aId}n$nId"
+    case InboxTm() => "/inbox"
     case UndefinedTm(msg) => s"/Error: $msg"
-    //case Inbox =>
   }
 
   def execute: Future[Any] = this match {
@@ -28,9 +28,10 @@ trait TmCommand {
     case CourseTm(cId) => CourseId(cId).data
     case ApplicantTm(cId, aId) => ???
     case ReflistTm(aId) => ???
-    case MessagesTm(aId) => ???
+    case MessagesTm(aId) => ApplicantId(aId).messages
     case MessageTm(aId, mId) => ???
     case NoteTm(aId, nId) => ???
+    case InboxTm() => ??? //Inbox
     case UndefinedTm(msg) => ???
     //case Inbox =>
   }

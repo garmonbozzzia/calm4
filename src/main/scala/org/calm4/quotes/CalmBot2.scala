@@ -18,7 +18,7 @@ import CachedWithFile._
 import Calm4._
 import CalmModel._
 import org.calm4.{CalmModel3, CalmUri, CommandParser, TmSymbolMap}
-//import org.calm4.CalmModel3._
+import org.calm4.CalmModel3._
 
 import scala.concurrent.Future
 

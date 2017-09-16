@@ -1,12 +1,16 @@
 package org.calm4
 
 import org.calm4.CalmModel3.{ApplicantRecord, CourseData, CourseId, CourseInfo}
-import org.calm4.quotes.CalmModel.GetCourse
+import org.calm4.CalmModel3._
 import org.calm4.quotes.CachedWithFile
-import org.json4s.{JInt, JNull, JObject, JString, JValue}
+import org.json4s._
 import CalmImplicits._
+import Utils._
+import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
+import org.calm4.Parsers.messageParser
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 object ApplicantOrd extends Ordering[ApplicantRecord] {
   private val priorities = TmSymbolMap.toTmSeq.map(_._1)
@@ -36,6 +40,10 @@ trait Course {
     case ("confirmation_state_name", x) => ("state", x)
   }
 
+  def extract(json: JValue): Seq[ApplicantRecord] = Try(json.extract[Seq[ApplicantRecord]].sorted).fold(
+    ex => {s"$json\n$ex".trace; throw new Exception(ex) }, identity
+  )
+
   def addGender(gender: String, ons: String): PartialFunction[JValue, JValue] = {
     case JObject(a) => JObject(("cId", JInt(cId)) :: ("gender" -> JString(gender)) :: ("ons" -> JString(ons)) :: a)
   }
@@ -45,12 +53,41 @@ trait Course {
     formattedJson = json.transformField(transform).camelizeKeys
   } yield {
     val info =  formattedJson.extract[CourseInfo]
-    val mo = (formattedJson \ "sitting" \ "male" \ "old").transform(addGender("M", "O")).extract[Seq[ApplicantRecord]].sorted
-    val mn = (formattedJson \ "sitting" \ "male" \ "new").transform(addGender("M", "N")).extract[Seq[ApplicantRecord]].sorted
-    val fo = (formattedJson \ "sitting" \ "female" \ "old").transform(addGender("F", "O")).extract[Seq[ApplicantRecord]].sorted
-    val fn = (formattedJson \ "sitting" \ "female" \ "new").transform(addGender("F", "N")).extract[Seq[ApplicantRecord]].sorted
-    val ms = (formattedJson \ "serving" \ "male").transform(addGender("M", "S")).extract[Seq[ApplicantRecord]].sorted
-    val fs = (formattedJson \ "serving" \ "female").transform(addGender("F", "S")).extract[Seq[ApplicantRecord]].sorted
+      val mo = extract((formattedJson \ "sitting" \ "male" \ "old").transform(addGender("M", "O")))
+      val mn = extract((formattedJson \ "sitting" \ "male" \ "new").transform(addGender("M", "N")))
+      val fo = extract((formattedJson \ "sitting" \ "female" \ "old").transform(addGender("F", "O")))
+      val fn = extract((formattedJson \ "sitting" \ "female" \ "new").transform(addGender("F", "N")))
+      val ms = extract((formattedJson \ "serving" \ "male").transform(addGender("M", "S")))
+      val fs = extract((formattedJson \ "serving" \ "female").transform(addGender("F", "S")))
     CourseData(info, mo ++ mn ++ fo ++ fn ++ ms ++ fs)
   }
+}
+
+
+trait Messages {
+  val aId: Int
+
+  import FastParse._
+  import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+  import net.ruippeixotog.scalascraper.dsl.DSL._
+
+  def parseMessageRecord: Seq[String] => Option[MessageRecord] = {
+    case Seq(u0, date, d1, d2, applicant, email, received, _, _) =>
+      val html = browser.parseString(u0)
+      for {
+        href <- html >?> attr("href")("a")
+        Some((aId, msgType, mId)) = messageParser.fastParse(href)
+      } yield MessageRecord(aId, mId, date, d1.toInt, d2.toInt, applicant, email, received, html >> text, msgType)
+    case x => x.trace; throw new Exception("error")
+  }
+
+  def messages: Future[Seq[MessageRecord]] = {
+    CachedWithFile.getJson(GetConversation(aId))
+      .map(x => (x \ "data").extract[Seq[Seq[String]]].trace.map(parseMessageRecord).flatten)
+
+  }
+}
+
+object A extends App{
+  ApplicantId(173401).messages
 }
