@@ -41,13 +41,14 @@ object CachedWithFile {
   private def duration(path: String) = (System.currentTimeMillis - new File(path).lastModified()).millis
 
   def update5minutes(req: Any) = duration(path(req)).gt(req match {
-    case GetCourseList() => Duration.Inf
-    case GetCourse(_) => Duration.Inf
+    case GetCourseList() => 1 day
+    case GetCourse(_) => 0 minutes
     case GetParticipant(_, _) => 5 minutes
-    case GetConversation(_) => (10 seconds).traceWith{_ => duration(path(req)).toUnit(TimeUnit.MINUTES)}
+    case GetConversation(_) => (5 minutes)
     case GetMessage(_, _) => 5 minutes
+    case GetInbox => 5 minutes
     case _ => Duration.Inf
-  })
+  }).traceWith{_ => f"Создан ${duration(path(req)).toUnit(TimeUnit.MINUTES)}%.2f минут назад"}
 
   private def path(req: Any) = s"data/cache/${req match {
     case GetCourseList() => "_courses"
@@ -63,8 +64,11 @@ object CachedWithFile {
     Files.write(Paths.get(path(req))//.traceWith(x => s"Saved: $x")
       , data.getBytes(StandardCharsets.UTF_8))
   def get_[K](req: K, updateCondition: Any => Boolean, factory: K => Future[String]): Future[String] =
-    (!updateCondition(req) ? load(req) | None).fold{ factory(req).traceWith(_ => "Update cache")
-      .map { _ *> (save(req, _)) } }(Future(_))
+    (!updateCondition(req) ? load(req) | None)
+      .fold{ factory(req).traceWith(_ => "Update cache")
+        .map { _ <|  (save(req, _))
+        }
+      }(Future(_))
   def get[T](req: CalmRequest, updateCondition: Any => Boolean = update5minutes)(implicit m: Manifest[T]): Future[T] =
     get_(req, updateCondition, CalmUri.uri andThen loadJson).map(x => parse(x).extract[T])
   def getDataJson(req: CalmRequest, updateCondition: Any => Boolean = update5minutes): Future[Seq[Seq[String]]] =

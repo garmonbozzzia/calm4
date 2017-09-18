@@ -1,34 +1,73 @@
 package org.calm4
 
 import org.calm4.CalmImplicits._
+import org.calm4.CalmModel3.InboxRecord
 import org.calm4.Utils._
-import org.calm4.sandbox.CalmView
+import org.calm4.quotes.Inbox.Id
 
-// имеем исходный запрос => jnghfdkztv pfghjc => получаем строку json/html => из строки парсим структуру данных => получаем набор объектов модели
-// => из структуры данных можем сформировать новые запросы
-// команда телеграма формирует исходный объект например /c2453a165453
-// из него можно получить объект /c2453 /a165453m /a165453r
-// каждый объект может быть детализирован(как это реализовать?) в виде trait
+
 
 object CalmModel3 {
   object Courses extends Courses
+  case class InboxRecord(cId: Int, aId: Int, mType: String, received: String) extends Applicant
+  object Inbox extends Inbox
   case class CourseId(cId: Int) extends Course
-  case class ApplicantId(aId: Int) extends Messages
-  case class ApplicantIdF(aId: Int, cId: Int) extends Messages
-  case class MessageId(mId: Int, aId: Int)
+  case class ApplicantId(aId: Int) extends Applicant
+  case class ApplicantIdF(aId: Int, cId: Int) extends Applicant
+  case class MessageId(mId: Int, aId: Int) extends Message
 
   case class CourseRecord(cId: Int, start: String, end: String,
-                          cType: String, venue: String, status: String)
+                          cType: String, venue: String, status: String) extends Course
   case class CourseList(courses: Seq[CourseRecord])
-  case class CourseInfo(courseId: Int, venue: String, startDate: String, endDate: String)
+  case class CourseInfo(cId: Int, venue: String, startDate: String, endDate: String) extends Course
   case class CourseData(courseInfo: CourseInfo, applicants: Seq[ApplicantRecord])
   case class ApplicantRecord(aId: Int, cId: Int, displayId: String, state: String,
                              givenName: String,familyName: String, sat: Int, served: Int,
-                             age: Int, ons: String, gender: String, pregnant: Boolean) extends Messages
+                             age: Int, ons: String, gender: String, pregnant: Boolean) extends Applicant
   case class ConversationList(aId: Int, messages: List[MessageRecord])
-  case class MessageRecord(mId: Int, aId: Int, date: String, d1: Int, d2: Int, applicant: String,
-                           email: String, received: String, msgType: String,urlType: String = "messages")
-  case class InboxRecord()
+  case class MessageRecord(mId: Int, aId: Int, date: String, d1: Int, d2: Int, sender: String, emailOrForm: String,
+                           received: String, title: String, msgType: String, unknown: String, inbox: Boolean)
+  case class MessageData( mId: Int, //"id": 1363066,
+                          createdAt: String, //"created_at": "2017-08-29 11:36:13 UTC",
+                          updatedAt: String, //"updated_at": "2017-08-30 14:47:12 UTC",
+                          sentAt: String, //"sent_at": "2017-08-29 11:36:13 UTC",
+                          operator: String, //"operator": "applicant",
+                          deliveryMethod: String, //"delivery_method": "email",
+                          status: String, //"status": "applicant_sent",
+                          deliveryStatus: Option[String], //"delivery_status": null,
+                          recipient: String, //"recipient": "registrars",
+                          from: String, //"from": "frau.nata95@mail.ru",
+                          replyTo: Option[String], //"reply_to": null,
+                          subject: String, //"subject": "Re: Your Vipassana Course - b9LqGO",
+                          inbox: Boolean, //"inbox": false,
+                          name: String, //"name": "Email Reply",
+                          description: String, //"description": "Applicant replied to message via email",
+                          messageType: String, //"type": "Message",
+                          removedFromInbox: String, //"removed_from_inbox": "2017-08-30 14:47:12 UTC",
+                          important: Boolean,//"important": false,
+                          text: String
+
+                          //"language_code": null,
+                          //"requires_student_response": false,
+                          //"requires_internal_response": false,
+                          //"letter_tag": null,
+                          //"referral_action_on_send": null,
+                          //"action_on_send": "",
+                          //"conversation_key": "6a17edb5949a55b",
+                          //"value": "",
+                          //"incoming": null,
+                          //"status_vo": {
+                          //"value": "applicant_sent"
+                          //},
+                          //"delivery_status_vo": null,
+                          //"deactivated_lts": [],
+                          //"associated_lts": [],
+                          //"activated_lts": [],
+                          //"currently_active_lts": [],
+                          //"sms_country": null,
+                          //"sms_national_nbr": null,
+                          //"attachments": [],
+                        )
 
   trait CalmRequest
   case class GetCourseList() extends CalmRequest // /courses
@@ -52,24 +91,3 @@ object CalmModel3 {
   case class InboxTm() extends TmCommand
   case class UndefinedTm(cmd: String) extends TmCommand
 }
-
-//
-
-// Courses =F> List[CourseRecord]
-// CourseRecord => CourseId
-// CourseId =F> (Info, List[ApplicantRecord])
-// ApplicantRecord => ApplicantCId
-// ApplicantRecord =F> (Info, List[MessageRecord])
-// MessageRecord => MessageId
-// MessageId =F> (Message)
-// Inbox =F> List[InboxRecord]
-// InboxRecord => ApplicantCId
-
-//object Ids {
-//  // c
-//  // c2455
-//  // c2455a235613
-//  // c2455a235613m
-//  //      a235613m3246886
-//  // i
-//}

@@ -136,15 +136,15 @@ object ConversationTest extends App {
 object Inbox extends App{
   import CachedWithFile._
   type Id = Int
-  case class InboxRecord(cId: Id, aId: Id, mType: String)
+  case class InboxRecord(cId: Id, aId: Id, mType: String, received: String)
   def parseInbox: PartialFunction[Seq[String], Option[InboxRecord]] = {
-    case Seq(linkAndType, _, _, _, _, _, _, _, _) =>
+    case Seq(linkAndType, received, _, _, _, _, _, _, _) =>
       val html = browser.parseString(linkAndType.trace)
       for{
-        href <-  html >?>[String] attr("href")("a")
+        href <- html >?>[String] attr("href")("a")
         (cId, aId) <- Parsers.applicantParser.fastParse(href).traceWith(_ => linkAndType)
         mType = html >> text
-      } yield InboxRecord(cId,aId,mType)
+      } yield InboxRecord(cId, aId, mType, received)
   }
   def parseReplyInbox: Seq[String] => Option[CalmRequest] = {
     case Seq(msgInfo, date, c2, c3, sender, email, received, _, _) =>
@@ -160,6 +160,7 @@ object Inbox extends App{
   def inbox: Future[Seq[InboxRecord]] =
     getDataJson(GetInbox(), _ => false).map(_.collect(parseInbox).flatten.filter(_.mType == "Reply"))
 
+  import org.calm4.quotes.Parsers.MessageData
   val a = for{
     messages <- getDataJson(GetInbox(), _ => false)
     replyMessages = messages.collect(parseInbox).flatten.filter(_.mType == "Reply")

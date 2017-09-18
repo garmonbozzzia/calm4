@@ -1,33 +1,22 @@
 package org.calm4
 
-import org.calm4.CalmModel3.{ApplicantRecord, CourseData, CourseId, CourseInfo}
-import org.calm4.CalmModel3._
+import org.calm4.CalmImplicits._
+import org.calm4.CalmModel3.{ApplicantRecord, CourseData, CourseId, CourseInfo, _}
+import org.calm4.Utils._
 import org.calm4.quotes.CachedWithFile
 import org.json4s._
-import CalmImplicits._
-import Utils._
-import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
-import org.calm4.Parsers.messageParser
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
-
-object ApplicantOrd extends Ordering[ApplicantRecord] {
-  private val priorities = TmSymbolMap.toTmSeq.map(_._1)
-  override def compare(x: ApplicantRecord, y: ApplicantRecord): Int = {
-    if (x.state == y.state)
-      x.familyName.compare(y.familyName)
-    else priorities.indexOf(x.state) - priorities.indexOf(y.state)
-  }
-}
+import scala.util.Try
 
 trait Course {
-  this: CourseId =>
-  override def toString: String = s"c$cId"
+  val cId: Int
+  //override def toString: String = s"c$cId"
 
   implicit val ord: Ordering[ApplicantRecord] = ApplicantOrd
 
   def transform: PartialFunction[(String, JValue), (String, JValue)] = {
+    case ("course_id", x) => "cId" -> x
     case ("courses_sat", JNull) => "sat" -> JInt(0)
     case ("id", x) => "aId" -> x
     case ("courses_sat", JInt(x)) => "sat" -> JInt(x)
@@ -63,31 +52,15 @@ trait Course {
   }
 }
 
-
-trait Messages {
-  val aId: Int
-
-  import FastParse._
-  import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-  import net.ruippeixotog.scalascraper.dsl.DSL._
-
-  def parseMessageRecord: Seq[String] => Option[MessageRecord] = {
-    case Seq(u0, date, d1, d2, applicant, email, received, _, _) =>
-      val html = browser.parseString(u0)
-      for {
-        href <- html >?> attr("href")("a")
-        Some((aId, msgType, mId)) = messageParser.fastParse(href)
-      } yield MessageRecord(aId, mId, date, d1.toInt, d2.toInt, applicant, email, received, html >> text, msgType)
-    case x => x.trace; throw new Exception("error")
-  }
-
-  def messages: Future[Seq[MessageRecord]] = {
-    CachedWithFile.getJson(GetConversation(aId))
-      .map(x => (x \ "data").extract[Seq[Seq[String]]].trace.map(parseMessageRecord).flatten)
-
-  }
-}
-
 object A extends App{
-  ApplicantId(173401).messages
+  import akka.stream.scaladsl.Source
+  //ApplicantId(173401).messages.map(_.trace)
+  //MessageId(1345003, 173401).data.map(_.trace)
+  Source.fromFuture(Inbox.list)
+    .mapConcat(_.to[scala.collection.immutable.Seq])
+    .filter(_.mType == "Reply")
+      .map(_.trace)
+    .mapAsync(1)(_.messages)
+    .map(_.filter(_.inbox))
+    .runForeach(_.trace)
 }

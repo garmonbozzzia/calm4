@@ -13,12 +13,9 @@ import Utils._
 import FastParse._
 
 trait Courses {
-  import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-  import net.ruippeixotog.scalascraper.dsl.DSL._
-  import Parsers._
   def list: Future[CourseList] =
     CachedWithFile.getDataJson(GetCourseList())
-      .map(_.map(Parsers.parseCourseRecord).flatten)
+      .map(_.map(parseCourseRecord).flatten)
       .map(actual)
 
   private def parseCourseRecord: Seq[String] => Option[CourseRecord] = {

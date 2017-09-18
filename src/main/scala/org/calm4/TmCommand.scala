@@ -29,9 +29,9 @@ trait TmCommand {
     case ApplicantTm(cId, aId) => ???
     case ReflistTm(aId) => ???
     case MessagesTm(aId) => ApplicantId(aId).messages
-    case MessageTm(aId, mId) => ???
+    case MessageTm(aId, mId) => MessageId(mId, aId).data
     case NoteTm(aId, nId) => ???
-    case InboxTm() => ??? //Inbox
+    case InboxTm() => Inbox.list
     case UndefinedTm(msg) => ???
     //case Inbox =>
   }

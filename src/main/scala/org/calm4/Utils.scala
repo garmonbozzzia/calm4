@@ -1,11 +1,21 @@
 package org.calm4
 
+import akka.event.Logging
+import org.calm4.CalmModel3.ApplicantRecord
+
 object Utils {
   val printer = pprint.copy( additionalHandlers = {case x:String => pprint.Tree.Literal(x.toString)}, defaultHeight = 1000)
+  //val log = Logging(CalmImplicits.system, this)
   implicit class Tracable[A] (val obj: A) extends AnyVal {
     def trace: A = {
       //pprintln(obj)
       printer.pprintln(obj)
+      obj
+    }
+
+    def trace[U](u: => U): A = {
+      //pprintln(obj)
+      printer.pprintln(u)
       obj
     }
 
@@ -40,3 +50,13 @@ object Utils {
     }
   }
 }
+
+object ApplicantOrd extends Ordering[ApplicantRecord] {
+  private val priorities = TmSymbolMap.toTmSeq.map(_._1)
+  override def compare(x: ApplicantRecord, y: ApplicantRecord): Int = {
+    if (x.state == y.state)
+      x.familyName.compare(y.familyName)
+    else priorities.indexOf(x.state) - priorities.indexOf(y.state)
+  }
+}
+

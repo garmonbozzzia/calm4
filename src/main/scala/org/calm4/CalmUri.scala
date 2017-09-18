@@ -20,7 +20,7 @@ object CalmUri {
     case GetCourse(id) => courseUri(id)
     case GetParticipant(id, courseId) => applicationUri(id,courseId)
     case GetConversation(participantId) => conversationUri(participantId)
-    case GetMessage(id, participantId ) => messageUri(id, participantId).trace
+    case GetMessage(mId, aId ) => messageUri(mId, aId).trace
     case GetNote(id, participantId ) => noteUri(id, participantId).trace
     case GetReflist(participantId) => reflistUri(participantId)
     case GetSearchResult(s) => searchUri(s)
@@ -36,7 +36,7 @@ object CalmUri {
   implicit def string2Path(str: String): Path = Path(str)
 
   def searchUri(s: String): Uri = host.withPath("/en/course_applications/search").withQuery(Query("typeahead" -> s))
-  def messageUri(msgId: Int, appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/messages/$msgId")
+  def messageUri(mId: Int, aId: Id): Uri = host.withPath(s"/en/course_applications/$aId/messages/$mId")
   def noteUri(msgId: Int, appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/notes/$msgId")
 
   def applicationUri(appId: Id, courseId: Id): Uri =
