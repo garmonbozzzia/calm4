@@ -3,16 +3,14 @@ package org.calm4
 import akka.actor.{Actor, Cancellable, Props}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Sink, Source}
-import org.calm4.CalmImplicits._
-import org.calm4.CalmModel3._
-import org.calm4.Utils._
+import org.calm4.core.CalmImplicits._
+import org.calm4.model.CalmModel3._
+import org.calm4.core.TickSource
+import org.calm4.core.Utils._
 
 import scala.concurrent.duration._
 import scala.io.StdIn
-
-
-
-import org.calm4.TickSource._
+import org.calm4.core.TickSource._
 
 
 
@@ -20,7 +18,7 @@ import org.calm4.TickSource._
 
 object InboxDemon {
 
-  trait InboxChange
+  trait InboxChange extends TmMessage
   case class NewMessage(messageRecord: MessageRecord) extends InboxChange
   case class RepliedMessage(messageRecord: MessageRecord) extends InboxChange
 

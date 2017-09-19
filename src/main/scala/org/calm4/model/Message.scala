@@ -1,23 +1,22 @@
-package org.calm4
+package org.calm4.model
 
-import org.calm4.CalmImplicits.browser
-import org.calm4.CalmModel3.GetMessage
-import org.calm4.quotes.CachedWithFile
-import org.json4s.JString
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import CalmModel3.{GetMessage, MessageData}
+import org.calm4.core.CalmImplicits.{browser, _}
+import org.calm4.core.Utils._
+import org.calm4.quotes.CachedWithFile
+import org.json4s.JString
 
+import scala.concurrent.Future
 import scala.util.Try
-import Utils._
-import CalmModel3._
-import CalmImplicits._
 
 
 trait Message {
   val aId: Int
   val mId: Int
 
-  def data = for{
+  def data: Future[MessageData] = for{
     json <- CachedWithFile.getJson(GetMessage(mId.trace, aId))
   } yield Try(json.camelizeKeys.transformField{
     case ("type", x) => "messageType" -> x

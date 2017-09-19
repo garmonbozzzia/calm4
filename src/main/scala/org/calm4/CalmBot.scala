@@ -4,10 +4,11 @@ import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import info.mukel.telegrambot4s.api.declarative.{Callbacks, Commands, InlineQueries}
 import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
 import info.mukel.telegrambot4s.methods.ParseMode
-import info.mukel.telegrambot4s.models.User
-import org.calm4.CalmModel3.CourseId
-import org.calm4.TickSource.Restart
-import org.calm4.Utils._
+import info.mukel.telegrambot4s.models.{ReplyKeyboardMarkup, User}
+import org.calm4.model.CalmModel3._
+import org.calm4.core.TickSource
+import org.calm4.core.TickSource.Restart
+import org.calm4.core.Utils._
 
 import scala.concurrent.duration._
 import scalaz.Scalaz._
@@ -28,6 +29,16 @@ object CalmBot extends TelegramBot
 
   def toLink(uri: String) = s"[ссылка]($uri)"
 
+  def render: Any => String = {
+    case InboxDemon.NewMessage(x) => s"New: ${CalmUri.messageUri(x.mId, x.aId).toString |> toLink }"
+    case InboxDemon.RepliedMessage(x) =>
+      s"Replied: ${CalmUri.messageUri(x.mId, x.aId)}".toString |> toLink
+    case CourseDemon.ApplicationAdded(aId, cId) =>
+      s"New ${CalmUri.applicationUri(aId, cId).toString |> toLink }"
+    case CourseDemon.StateChanged(oldState, newState, aId, cId) =>
+      s"${TmSymbolMap.toTm(oldState)}=>${TmSymbolMap.toTm(newState)} ${CalmUri.applicationUri(aId, cId).toString |> toLink }"
+  }
+
   class ReplyActor(implicit msg: info.mukel.telegrambot4s.models.Message) extends Actor {
     import ReplyActor._
     var buffer = ""
@@ -40,26 +51,14 @@ object CalmBot extends TelegramBot
     override def receive: Receive = {
       case Flush =>
         reply(buffer, parseMode = Some(ParseMode.Markdown)).trace("flush")
-        buffer = ""
-      case Reply(InboxDemon.NewMessage(x)) => self !
-        Reply(s"New: ${CalmUri.messageUri(x.mId, x.aId).toString |> toLink }")
-      case Reply(InboxDemon.RepliedMessage(x)) => self !
-        Reply(s"Replied: ${CalmUri.messageUri(x.mId, x.aId)}".toString |> toLink)
-      case Reply(CourseDemon.ApplicationAdded(aId, cId)) => self !
-        Reply(s"New ${CalmUri.applicationUri(aId, cId).toString |> toLink }")
-      case Reply(CourseDemon.StateChanged(oldState, newState, aId, cId)) => self !
-        Reply(s"${TmSymbolMap.toTm(oldState)}=>${TmSymbolMap.toTm(newState)} ${CalmUri.applicationUri(aId, cId).toString |> toLink }")
-      case Reply(text) =>
-        buffer = s"$buffer$text\n"
+        buffer = "\n"
+      case obj =>
+        buffer = s"$buffer\n$obj".trace
         restartFlush
     }
   }
 
   val replyActors = scala.collection.mutable.Map.empty[User, ActorRef]
-
-  //  val courseDemon = for {
-  //    courses <- Courses.list
-  //  } yield { CourseDemon.run(courses.courses) }
 
   onCommand('inbox) { implicit msg =>
     inboxDemon ! Restart
@@ -81,15 +80,24 @@ object CalmBot extends TelegramBot
 
   onCommand('start) { implicit msg =>
     msg.from.foreach { user =>
+      user.trace
       if (!replyActors.contains(user)) {
         val replyActor = system.actorOf(Props(new ReplyActor))
-        CourseDemon.callbacks.append(x => replyActor ! ReplyActor.Reply(x))
-        InboxDemon.callbacks.append(x => replyActor ! ReplyActor.Reply(x))
+        CourseDemon.callbacks.append(x => replyActor ! x)
+        InboxDemon.callbacks.append(x => replyActor ! x)
       }
     }
   }
-}
 
+  onMessage{ implicit msg =>
+    for {
+      msgText <- msg.text
+      user <- msg.from
+      ra = replyActors.getOrElseUpdate(user, system.actorOf(Props(new ReplyActor)))
+      cmd = CommandParser.parse(msgText)
+    } cmd.execute.foreach( ra.trace ! _.tmText)
+  }
+}
 
 object CalmBotApp extends App {
   CalmBot.run()

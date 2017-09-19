@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit
 
 import org.calm4.CalmUri
 import org.calm4.quotes.Calm4Http._
-import org.calm4.CalmModel3._
+import org.calm4.model.CalmModel3._
 import org.calm4.CalmUri._
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
@@ -48,7 +48,7 @@ object CachedWithFile {
     case GetMessage(_, _) => 5 minutes
     case GetInbox => 5 minutes
     case _ => Duration.Inf
-  }).traceWith{_ => f"Создан ${duration(path(req)).toUnit(TimeUnit.MINUTES)}%.2f минут назад"}
+  }).traceWith{_ => f"${path(req)} Создан ${duration(path(req)).toUnit(TimeUnit.MINUTES)}%.2f минут назад"}
 
   private def path(req: Any) = s"data/cache/${req match {
     case GetCourseList() => "_courses"
@@ -78,7 +78,7 @@ object CachedWithFile {
   def getPage(req: CalmRequest, force: Boolean = false) = get_(req, _ => force, CalmUri.uri andThen loadPage_)
 }
 object CreationTime extends App {
-  import org.calm4.Utils._
+  import org.calm4.core.Utils._
   (110 minute).toMillis.trace
   //FiniteDuration(10, )
   (System.currentTimeMillis - new File("data/sessionId").lastModified()).millis.toUnit(TimeUnit.HOURS).trace

@@ -25,5 +25,4 @@ case class ApplicantJsonRecordTm(cId: Int, aId: Int, familyName: String, givenNa
       |$shortStatus $longStatus ${sitAndServed.fold(""){case (x,y) => s"\n$nos Sit: $x Served: $y"}}
       |\n/a${aId}m
     """.stripMargin
-
 }

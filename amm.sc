@@ -1,7 +1,7 @@
 import org.calm4._
-import Utils._
-import CalmModel3._
-import CalmImplicits._
+import org.calm4.core.Utils._
+import org.calm4.model.CalmModel3._
+import org.calm4.core.CalmImplicits._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.json4s._

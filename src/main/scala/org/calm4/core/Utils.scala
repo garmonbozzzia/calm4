@@ -1,10 +1,19 @@
-package org.calm4
+package org.calm4.core
 
-import akka.event.Logging
-import org.calm4.CalmModel3.ApplicantRecord
+import fastparse.all._
+import org.calm4.model.CalmModel3.ApplicantRecord
+import org.calm4.TmSymbolMap
 
 object Utils {
-  val printer = pprint.copy( additionalHandlers = {case x:String => pprint.Tree.Literal(x.toString)}, defaultHeight = 1000)
+
+  implicit class FastParseW[T](val parser: Parser[T]) extends AnyVal {
+    def fastParse(data: String): Option[T] = parser.parse(data) match {
+      case Parsed.Success(x, _) => Some(x)
+      case x => None.traceWith(_ => s"$x\n$data\n")
+    }
+  }
+  val printer = pprint.copy( additionalHandlers = {case x:String => pprint.Tree.Literal(x.toString)},
+    defaultHeight = 1000, defaultWidth = 120)
   //val log = Logging(CalmImplicits.system, this)
   implicit class Tracable[A] (val obj: A) extends AnyVal {
     def trace: A = {

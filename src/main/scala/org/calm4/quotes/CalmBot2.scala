@@ -13,12 +13,12 @@ import org.calm4.quotes.CalmModel2._
 import org.calm4.quotes.DiffChecker._
 import org.calm4.quotes.Parsers._
 import org.calm4.CommandParser._
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 import CachedWithFile._
 import Calm4._
 import CalmModel._
-import org.calm4.{CalmModel3, CalmUri, CommandParser, TmSymbolMap}
-import org.calm4.CalmModel3.{ MessageData=>_, _}
+import org.calm4.{CalmUri, CommandParser, TmSymbolMap}
+import org.calm4.model.CalmModel3.{ MessageData=>_, _}
 
 import scala.concurrent.Future
 

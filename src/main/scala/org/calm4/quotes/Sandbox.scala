@@ -5,9 +5,9 @@ import java.nio.file.{Files, Paths}
 import akka.stream.scaladsl.{Sink, Source}
 import Calm4Old._
 import org.calm4.quotes.Calm4Http._
-import org.calm4.CalmImplicits._
+import org.calm4.core.CalmImplicits._
 import org.calm4.CalmUri
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 
 import scala.concurrent.Future
 
@@ -36,7 +36,7 @@ object CalmApps {
 }
 
 
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 object TestData {
   lazy val app1ExampleUri = "https://calm.dhamma.org/en/courses/2528/course_applications/166012/edit"
   lazy val courseExampleUri1 = "https://calm.dhamma.org/en/courses/2528/course_applications"

@@ -1,7 +1,7 @@
 package org.calm4.quotes
 
-import org.calm4.CalmImplicits._
-import org.calm4.Utils._
+import org.calm4.core.CalmImplicits._
+import org.calm4.core.Utils._
 
 object CalmModel2 {
 

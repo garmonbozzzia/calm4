@@ -1,15 +1,12 @@
-package org.calm4
+package org.calm4.model
 
-import org.calm4.CalmImplicits._
-import org.calm4.CalmModel3.InboxRecord
-import org.calm4.Utils._
-import org.calm4.quotes.Inbox.Id
+import org.calm4.{TmCommand, TmMessage}
 
 
 
 object CalmModel3 {
   object Courses extends Courses
-  case class InboxRecord(cId: Int, aId: Int, mType: String, received: String) extends Applicant
+  case class InboxRecord(cId: Int, aId: Int, mType: String, received: String) extends Applicant with TmMessage
   object Inbox extends Inbox
   case class CourseId(cId: Int) extends Course
   case class ApplicantId(aId: Int) extends Applicant
@@ -17,16 +14,17 @@ object CalmModel3 {
   case class MessageId(mId: Int, aId: Int) extends Message
 
   case class CourseRecord(cId: Int, start: String, end: String,
-                          cType: String, venue: String, status: String) extends Course
-  case class CourseList(courses: Seq[CourseRecord])
+                          cType: String, venue: String, status: String) extends Course with TmMessage
+  case class CourseList(courses: Seq[CourseRecord]) extends TmMessage
   case class CourseInfo(cId: Int, venue: String, startDate: String, endDate: String) extends Course
-  case class CourseData(courseInfo: CourseInfo, applicants: Seq[ApplicantRecord])
+  case class CourseData(courseInfo: CourseInfo, applicants: Seq[ApplicantRecord]) extends TmMessage
   case class ApplicantRecord(aId: Int, cId: Int, displayId: String, state: String,
                              givenName: String,familyName: String, sat: Int, served: Int,
-                             age: Int, ons: String, gender: String, pregnant: Boolean) extends Applicant
+                             age: Int, ons: String, gender: String, pregnant: Boolean) extends Applicant with TmMessage
   case class ConversationList(aId: Int, messages: List[MessageRecord])
-  case class MessageRecord(mId: Int, aId: Int, date: String, d1: Int, d2: Int, sender: String, emailOrForm: String,
-                           received: String, title: String, msgType: String, unknown: String, inbox: Boolean)
+  case class MessageRecord(mId: Int, aId: Int, date: String, d1: Int, d2: Int, sender: String,
+                           emailOrForm: String, received: String, title: String, msgType: String,
+                           unknown: String, inbox: Boolean) extends TmMessage
   case class MessageData( mId: Int, //"id": 1363066,
                           createdAt: String, //"created_at": "2017-08-29 11:36:13 UTC",
                           updatedAt: String, //"updated_at": "2017-08-30 14:47:12 UTC",
@@ -67,7 +65,7 @@ object CalmModel3 {
                           //"sms_country": null,
                           //"sms_national_nbr": null,
                           //"attachments": [],
-                        )
+                        ) extends TmMessage
 
   trait CalmRequest
   case class GetCourseList() extends CalmRequest // /courses

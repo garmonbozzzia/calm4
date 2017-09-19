@@ -1,16 +1,14 @@
-package org.calm4
+package org.calm4.model
 
-import org.calm4.CalmImplicits.browser
-import org.calm4.CalmModel3.{CourseList, CourseRecord}
-import org.calm4.quotes.CachedWithFile
-import org.calm4.CalmModel3._
-import scala.concurrent.Future
-import Parsers._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
-import CalmImplicits._
-import Utils._
-import FastParse._
+import CalmModel3.{CourseList, CourseRecord, _}
+import org.calm4.Parsers.courseIdParser
+import org.calm4.core.CalmImplicits.{browser, _}
+import org.calm4.core.Utils._
+import org.calm4.quotes.CachedWithFile
+
+import scala.concurrent.Future
 
 trait Courses {
   def list: Future[CourseList] =

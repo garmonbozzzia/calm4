@@ -6,11 +6,11 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, text}
 import org.calm4.quotes.Calm4Http._
-import org.calm4.CalmImplicits._
+import org.calm4.core.CalmImplicits._
 import org.calm4.{CalmUri}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
-import org.calm4.CalmModel3._
+import org.calm4.model.CalmModel3._
 
 import scala.concurrent.Future
 
@@ -81,7 +81,7 @@ object CalmModel {
 }
 
 import org.calm4.quotes.CalmModel._
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 object CalmSearchTest extends App {
   load(GetSearchResult("B"))
     .map(_.trace)

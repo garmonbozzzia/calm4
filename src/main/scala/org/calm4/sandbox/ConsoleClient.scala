@@ -1,9 +1,9 @@
 package org.calm4.sandbox
 
 import akka.stream.scaladsl.Source
-import org.calm4.{CalmModel3, CommandParser}
-import org.calm4.Utils._
-import org.calm4.CalmModel3._
+import org.calm4.CommandParser
+import org.calm4.core.Utils._
+import org.calm4.model.CalmModel3._
 
 import scala.io.StdIn
 
@@ -13,7 +13,7 @@ import scala.io.StdIn
 object Command {
   def apply(text: String) = CommandParser.parse(text)
 }
-import org.calm4.CalmImplicits._
+import org.calm4.core.CalmImplicits._
 object ConsoleClient extends App {
   //val input = Stream.continually(StdIn.readLine)
   //input.foreach(_.trace)

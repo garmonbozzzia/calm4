@@ -2,9 +2,11 @@ package org.calm4
 
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Sink, Source}
-import org.calm4.CalmModel3._
-import Utils._
-import CalmImplicits._
+import org.calm4.model.CalmModel3._
+import org.calm4.core.Utils._
+import org.calm4.core.CalmImplicits._
+import org.calm4.core.TickSource
+import org.calm4.model.{Applicant, Course}
 
 import scala.concurrent.duration._
 
@@ -13,8 +15,9 @@ import scala.concurrent.duration._
   */
 object CourseDemon {
 
-  trait CourseDiff
-  case class StateChanged(oldState: String, newState: String, aId: Int, cId: Int) extends CourseDiff with Applicant
+  trait CourseDiff extends TmMessage
+  case class StateChanged(oldState: String, newState: String, aId: Int, cId: Int)
+    extends CourseDiff with Applicant with TmMessage
   case class ApplicationAdded(aId: Int, cId: Int) extends CourseDiff with Applicant
   case object NoChanges extends CourseDiff
 

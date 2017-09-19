@@ -1,8 +1,8 @@
 package org.calm4
 
 import fastparse.all._
-import org.calm4.FastParse._
-import CalmModel3._
+import org.calm4.model.CalmModel3._
+import org.calm4.core.Utils._
 
 object CommandParser {
   private val cId = P(CharIn('0'to'9').rep.!.map(_.toInt))

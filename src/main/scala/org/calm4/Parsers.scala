@@ -1,16 +1,7 @@
 package org.calm4
 
 import fastparse.all._
-import org.calm4.Utils._
-
-object FastParse {
-  implicit class FastParseW[T](val parser: Parser[T]) extends AnyVal {
-    def fastParse(data: String): Option[T] = parser.parse(data) match {
-      case Parsed.Success(x, _) => Some(x)
-      case x => None.traceWith(_ => s"$x\n$data\n")
-    }
-  }
-}
+import org.calm4.core.Utils._
 
 trait ParsersUtils {
   val id = P(CharIn('0'to'9').rep(1).!.map(_.toInt))

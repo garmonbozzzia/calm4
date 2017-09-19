@@ -1,8 +1,9 @@
-package org.calm4
+package org.calm4.model
 
-import org.calm4.CalmImplicits._
-import org.calm4.CalmModel3.{ApplicantRecord, CourseData, CourseId, CourseInfo, _}
-import org.calm4.Utils._
+import CalmModel3.{ApplicantRecord, CourseData, CourseInfo, _}
+import org.calm4.core.ApplicantOrd
+import org.calm4.core.CalmImplicits._
+import org.calm4.core.Utils._
 import org.calm4.quotes.CachedWithFile
 import org.json4s._
 

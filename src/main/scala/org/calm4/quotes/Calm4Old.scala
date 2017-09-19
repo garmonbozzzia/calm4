@@ -4,10 +4,10 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors._
 import org.calm4.quotes.Calm4Http.loadPage
-import org.calm4.CalmImplicits._
+import org.calm4.core.CalmImplicits._
 
 import scala.concurrent.Future
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 
 object Calm4Old {
   val host = "https://calm.dhamma.org"

@@ -1,23 +1,19 @@
-package org.calm4
+package org.calm4.model
 
 import java.time.Instant
 
-import akka.actor.{Actor, Cancellable, Props}
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Source
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
-import org.calm4.CalmImplicits._
-import org.calm4.CalmModel3.{GetInbox, Inbox, InboxRecord, MessageRecord}
-import org.calm4.FastParse._
-import org.calm4.Utils._
+import CalmModel3.{GetInbox, InboxRecord, MessageRecord}
+import org.calm4.Parsers
+import org.calm4.core.CalmImplicits._
+import org.calm4.core.Utils._
 import org.calm4.quotes.CachedWithFile
 import org.json4s._
 
-
 import scala.concurrent.Future
-import scala.io.StdIn
 
 trait Inbox {
   def parseInboxRecord: PartialFunction[Seq[String], Option[InboxRecord]] = {
@@ -52,15 +48,13 @@ object DateTimeApp extends App {
   val timezoneDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z")
   val a = "2017-08-30 17:14:30 UTC"
   val date = timezoneDateFormat.parse(a).trace
-  import Utils._
+  import org.calm4.core.Utils._
 
   import scala.concurrent.duration._
   (-(System.currentTimeMillis() - date.getTime) millisecond).toDays.trace
   val b: Instant = date.toInstant.trace
   dateFormat.format(date).trace
 }
-
-import scala.concurrent.duration._
 
 
 

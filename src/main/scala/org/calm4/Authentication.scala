@@ -4,9 +4,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Post}
 import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-import org.calm4.CalmImplicits._
-import Utils._
-
+import org.calm4.core.CalmImplicits._
+import org.calm4.core.Utils._
 import scala.concurrent.Future
 import scalaz.Scalaz._
 

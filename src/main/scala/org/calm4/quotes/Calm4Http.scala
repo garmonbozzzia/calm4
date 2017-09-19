@@ -12,7 +12,7 @@ import net.ruippeixotog.scalascraper.model.Document
 import org.calm4.Authentication
 
 import scala.concurrent.Future
-import org.calm4.CalmImplicits._
+import org.calm4.core.CalmImplicits._
 
 object Calm4Http{
   val accept = RawHeader("Accept", "application/json, text/javascript, */*; q=0.01")

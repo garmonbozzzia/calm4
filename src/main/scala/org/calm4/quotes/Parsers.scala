@@ -5,9 +5,9 @@ import fastparse.all._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.calm4.quotes.CachedWithFile.get
-import org.calm4.CalmImplicits._
-import org.calm4.CalmModel3._
-import org.calm4.Utils._
+import org.calm4.core.CalmImplicits._
+import org.calm4.model.CalmModel3._
+import org.calm4.core.Utils._
 
 import scala.concurrent.Future
 
@@ -80,7 +80,7 @@ object Parsers{
 
 import org.calm4.quotes.CalmModel._
 import org.calm4.quotes.Parsers._
-import org.calm4.Utils._
+import org.calm4.core.Utils._
 
 object ConversationTest extends App {
   def parse: Seq[String] => ConversationData = {

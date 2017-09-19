@@ -1,13 +1,13 @@
-package org.calm4
+package org.calm4.model
 
-import org.calm4.CalmImplicits.{browser, _}
-import org.calm4.CalmModel3.{GetConversation, MessageRecord}
-import org.calm4.Parsers.messageParser
-import org.calm4.Utils._
-import org.calm4.quotes.CachedWithFile
-import FastParse._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import CalmModel3.{GetConversation, MessageRecord}
+import org.calm4.Parsers.messageParser
+import org.calm4.core.CalmImplicits.{browser, _}
+import org.calm4.core.Utils._
+import org.calm4.quotes.CachedWithFile
+
 import scala.concurrent.Future
 
 trait Applicant {

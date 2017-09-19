@@ -6,16 +6,16 @@ import org.calm4.quotes.Parsers.{CourseList, CourseRecord}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FeatureSpec, Matchers}
-import org.calm4.CalmImplicits._
-import org.calm4.CalmModel3.GetCourseList
-import org.calm4.Utils._
+import org.calm4.core.CalmImplicits._
+import org.calm4.model.CalmModel3.GetCourseList
+import org.calm4.core.Utils._
 
 trait CalmTest extends FeatureSpec with Matchers with ScalaFutures {
   implicit val patience = PatienceConfig(timeout = Span(15,Seconds), interval = Span(500, Millis))
 }
 
 class TestModel extends CalmTest {
-  import org.calm4.CalmModel3.{CourseList, _}
+  import org.calm4.model.CalmModel3.{CourseList, _}
   whenReady( for {
     CourseList(courses) <- Courses.list
     a <- CourseId(courses(0).cId).data

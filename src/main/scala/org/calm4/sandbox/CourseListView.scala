@@ -1,6 +1,6 @@
 package org.calm4.sandbox
 
-import org.calm4.CalmModel3._
+import org.calm4.model.CalmModel3._
 import org.calm4.TmSymbolMap
 
 /**
