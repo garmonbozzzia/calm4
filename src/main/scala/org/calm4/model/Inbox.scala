@@ -7,6 +7,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
 import CalmModel3.{GetInbox, InboxRecord, MessageRecord}
+import akka.stream.ThrottleMode
 import org.calm4.Parsers
 import org.calm4.core.CalmImplicits._
 import org.calm4.core.Utils._
@@ -14,6 +15,7 @@ import org.calm4.quotes.CachedWithFile
 import org.json4s._
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
 
 trait Inbox {
   def parseInboxRecord: PartialFunction[Seq[String], Option[InboxRecord]] = {
@@ -25,22 +27,32 @@ trait Inbox {
         mType = html >> text
       } yield InboxRecord(cId, aId, mType, received)
   }
-  def list: Future[Seq[InboxRecord]] = for{
-    json <- CachedWithFile.getJson(GetInbox(), _ => true)
-    res = (json \ "data").extract[Seq[Seq[String]]].reverse.collect(parseInboxRecord).flatten
-  } yield res
 
-  def listReply: Future[Seq[InboxRecord]] = list.map(_.filter(_.mType == "Reply"))
-
-  def listReplyMessages: Future[Seq[MessageRecord]] = Source.fromFuture(listReply)
-    .mapConcat(_.to[scala.collection.immutable.Seq])
+  def all: Future[Seq[MessageRecord]] = Source.fromIterator(() => Iterator.iterate(0)(_ + 100))
+    .map(GetInbox(_))
+    .mapAsync(1)(x => CachedWithFile.getJson(x, _ => true))
+    .map(json => (json \ "data").extract[Seq[Seq[String]]].collect(parseInboxRecord).flatten)
+    .takeWhile(_.nonEmpty)
+    .mapConcat(_.toStream)
+    .filter(_.mType != "New")
     .mapAsync(1)(_.messages)
+    .throttle(5, 1 second, 1, ThrottleMode.Shaping)
     .map(_.filter(_.inbox))
     .runReduce(_ ++ _)
 
-  def diff(a: Seq[InboxRecord], saved: Seq[MessageRecord]) =
-    Source.fromIterator(() => a.iterator)
-    .mapAsync(1)(_.messages.map(_.filter(_.inbox)))
+//  def list: Future[Seq[InboxRecord]] = for{
+//    json <- CachedWithFile.getJson(GetInbox(), _ => true)
+//    res = (json \ "data").extract[Seq[Seq[String]]].reverse.collect(parseInboxRecord).flatten
+//  } yield res
+//
+//  def listReply: Future[Seq[InboxRecord]] = list.map(_.trace.filter(_.mType == "Reply"))
+//
+//  def listReplyMessages: Future[Seq[MessageRecord]] = Source.fromFuture(listReply)
+//    .mapConcat(_.to[scala.collection.immutable.Seq])
+//    .mapAsync(1)(_.messages)
+//      .throttle(5, 1 second, 1, ThrottleMode.Shaping)
+//    .map(_.filter(_.inbox))
+//    .runReduce(_ ++ _)
 }
 
 object DateTimeApp extends App {

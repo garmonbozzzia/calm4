@@ -57,7 +57,7 @@ object Sandbox extends App {
 
   //Course.all.head.appRecords.map(_.trace)
 
-  saveJson(CalmUri.inboxUri, "data/inbox2.json")
+  saveJson(CalmUri.inboxUri(), "data/inbox2.json")
 
   //Course.all(0).appRecords.map(_.mkString("\n").trace)
 

@@ -52,16 +52,3 @@ trait Course {
     CourseData(info, mo ++ mn ++ fo ++ fn ++ ms ++ fs)
   }
 }
-
-object A extends App{
-  import akka.stream.scaladsl.Source
-  //ApplicantId(173401).messages.map(_.trace)
-  //MessageId(1345003, 173401).data.map(_.trace)
-  Source.fromFuture(Inbox.list)
-    .mapConcat(_.to[scala.collection.immutable.Seq])
-    .filter(_.mType == "Reply")
-      .map(_.trace)
-    .mapAsync(1)(_.messages)
-    .map(_.filter(_.inbox))
-    .runForeach(_.trace)
-}

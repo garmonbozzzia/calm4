@@ -7,17 +7,11 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.calm4.quotes.CachedWithFile.get
 import org.calm4.core.CalmImplicits._
 import org.calm4.model.CalmModel3._
-import org.calm4.core.Utils._
+import org.calm4.core.Utils.{FastParseW, _}
 
 import scala.concurrent.Future
 
 object Parsers{
-  implicit class FastParse[T](val parser: Parser[T] ) extends AnyVal {
-    def fastParse(data: String): Option[T] = parser.parse(data) match {
-      case Parsed.Success(x,_) => Some(x)
-      case x => None.traceWith(_ => s"$x\n$data\n")
-    }
-  }
 
   val id = P(CharIn('0'to'9').rep(1).!.map(_.toInt))
   private val host = "https://calm.dhamma.org".?

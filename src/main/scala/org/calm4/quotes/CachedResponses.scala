@@ -46,11 +46,12 @@ object CachedWithFile {
     case GetParticipant(_, _) => 5 minutes
     case GetConversation(_) => (5 minutes)
     case GetMessage(_, _) => 5 minutes
-    case GetInbox => 5 minutes
+    case GetInbox(_) => 5 minutes
     case _ => Duration.Inf
   }).traceWith{_ => f"${path(req)} Создан ${duration(path(req)).toUnit(TimeUnit.MINUTES)}%.2f минут назад"}
 
   private def path(req: Any) = s"data/cache/${req match {
+    case GetInbox(s) => s"inbox$s.json"
     case GetCourseList() => "_courses"
     case GetCourse(id) => s"c$id"
     case GetParticipant(aId, cId) => s"c${cId}a$aId"

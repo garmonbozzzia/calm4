@@ -1,20 +1,13 @@
 package org.calm4
 
-import akka.actor.{Actor, Cancellable, Props}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Sink, Source}
 import org.calm4.core.CalmImplicits._
-import org.calm4.model.CalmModel3._
 import org.calm4.core.TickSource
 import org.calm4.core.Utils._
-
+import org.calm4.model.CalmModel3._
 import scala.concurrent.duration._
 import scala.io.StdIn
-import org.calm4.core.TickSource._
-
-
-
-
 
 object InboxDemon {
 
@@ -22,19 +15,21 @@ object InboxDemon {
   case class NewMessage(messageRecord: MessageRecord) extends InboxChange
   case class RepliedMessage(messageRecord: MessageRecord) extends InboxChange
 
-  val callbacks = scala.collection.mutable.ListBuffer.empty[InboxChange => Any]
+  val callbacks = scala.collection.mutable.ListBuffer.empty[TmMessage => Any]
 
-  def diff(x0: Seq[MessageRecord], x1: Seq[MessageRecord]): Seq[InboxChange] = x1.filter(!x0.contains(_))
+  def diff(x0: Seq[MessageRecord], x1: Seq[MessageRecord]): Seq[InboxChange] =
+    x1.trace("Diff:").trace.filter(!x0.contains(_))
     .map(NewMessage) ++ x0.filter(!x1.contains(_)).map(RepliedMessage)
 
   def run(duration: FiniteDuration = 10 minute) = {
     val s = Source.queue[Any](1, OverflowStrategy.dropNew)
-      .mapAsync(1)(_ => Inbox.listReplyMessages)
+      .mapAsync(1)(_ => Inbox.all)
+      .prepend(Source.single(Seq()))
       .sliding(2)
       .map {
-        case Seq(x, y) => diff(x, y)
+        case Seq(x, y) => new SeqTmMessage(diff(x.trace, y).trace)
       }
-      .map(_.foreach(x => callbacks.foreach(_ (x))))
+      .map(x => callbacks.foreach(_ (x)))
       .to(Sink.ignore)
       .run()
 
@@ -47,7 +42,7 @@ object InboxDemon {
 
 object InboxNewApp extends App {
   val ts = InboxDemon.run()
-  InboxDemon.callbacks.append(PartialFunction[InboxDemon.InboxChange, Any] {
+  InboxDemon.callbacks.append(PartialFunction[TmMessage, Any] {
     case InboxDemon.NewMessage(x) => s"New: ${CalmUri.messageUri(x.mId, x.aId)}".trace
     case InboxDemon.RepliedMessage(x) => s"Replied: ${CalmUri.messageUri(x.mId, x.aId)}".trace
   })
@@ -68,7 +63,3 @@ object InboxNewApp extends App {
     .runWith(Sink.ignore)
 }
 
-object AAAA extends App {
-  f"${1}%.2f".trace
-  val coll = scala.collection.mutable.Seq.empty[Int]
-}

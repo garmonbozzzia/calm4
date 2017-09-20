@@ -16,7 +16,7 @@ object CalmUri {
 
   def uri: CalmRequest => Uri = {
     case GetCourseList() => coursesUri()
-    case GetInbox() => inboxUri
+    case GetInbox(s) => inboxUri(s)
     case GetCourse(id) => courseUri(id)
     case GetParticipant(id, courseId) => applicationUri(id,courseId)
     case GetConversation(participantId) => conversationUri(participantId)
@@ -37,7 +37,11 @@ object CalmUri {
 
   def searchUri(s: String): Uri = host.withPath("/en/course_applications/search").withQuery(Query("typeahead" -> s))
   def messageUri(mId: Int, aId: Id): Uri = host.withPath(s"/en/course_applications/$aId/messages/$mId")
-  def noteUri(msgId: Int, appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/notes/$msgId")
+  def noteUri(nId: Int, aId: Id): Uri = host.withPath(s"/en/course_applications/$aId/notes/$nId")
+  def messageOrNoteUri( msgId: Int, aId: Int, mType: String): Uri = mType match {
+    case "m" => messageUri(msgId, aId)
+    case "n" => noteUri(msgId, aId)
+  }
 
   def applicationUri(appId: Id, courseId: Id): Uri =
     host.withPath(s"/en/courses/$courseId/course_applications/$appId/edit")
@@ -55,12 +59,12 @@ object CalmUri {
 
   def courseUri(id: Int): Uri = host.withPath(s"/en/courses/$id/course_applications")
 
-  lazy val inboxUri: Uri =
+  def inboxUri(start: Int = 0): Uri =
     host.withPath("/en/course_applications/inbox").withQuery(columnParams(8) ++ Seq(
       "draw" -> "1",
       "order[0][column]" -> "1",
       "order[0][dir]" -> "asc",
-      "start" -> "0",
+      "start" -> start.toString,
       "length" -> "100",
       "search[value]" -> "",
       "search[regex]" -> "false",

@@ -13,7 +13,7 @@ object Utils {
     }
   }
   val printer = pprint.copy( additionalHandlers = {case x:String => pprint.Tree.Literal(x.toString)},
-    defaultHeight = 1000, defaultWidth = 120)
+    defaultHeight = 1000, defaultWidth = 140)
   //val log = Logging(CalmImplicits.system, this)
   implicit class Tracable[A] (val obj: A) extends AnyVal {
     def trace: A = {

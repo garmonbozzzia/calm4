@@ -69,7 +69,7 @@ object CalmModel3 {
 
   trait CalmRequest
   case class GetCourseList() extends CalmRequest // /courses
-  case class GetInbox() extends CalmRequest // inbox
+  case class GetInbox(start: Int = 0) extends CalmRequest // inbox
   case class GetCourse(id: Int ) extends CalmRequest // c2545 c2545[_fm][_nos][_mwi]
   case class GetParticipant(id: Int, courseId: Int ) extends CalmRequest // /c2545a165453
   case class GetConversation(participantId: Int) extends CalmRequest // a165453m
@@ -80,6 +80,7 @@ object CalmModel3 {
 
   case class AllCoursesTm() extends TmCommand
   case class CourseTm(cId: Int) extends TmCommand
+  case class CourseListTm(cId: Int) extends TmCommand
   //case class FilteredCourseTm(id: Int, g: Some[Boolean],  )
   case class ApplicantTm(cId: Int, aId: Int ) extends TmCommand
   case class ReflistTm(aId: Int) extends TmCommand
@@ -88,4 +89,5 @@ object CalmModel3 {
   case class NoteTm(aId: Int, nId: Int) extends TmCommand
   case class InboxTm() extends TmCommand
   case class UndefinedTm(cmd: String) extends TmCommand
+  case class WatchTm(cId: Int) extends TmCommand
 }

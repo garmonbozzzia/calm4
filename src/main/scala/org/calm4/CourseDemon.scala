@@ -17,7 +17,7 @@ object CourseDemon {
 
   trait CourseDiff extends TmMessage
   case class StateChanged(oldState: String, newState: String, aId: Int, cId: Int)
-    extends CourseDiff with Applicant with TmMessage
+    extends CourseDiff with Applicant
   case class ApplicationAdded(aId: Int, cId: Int) extends CourseDiff with Applicant
   case object NoChanges extends CourseDiff
 

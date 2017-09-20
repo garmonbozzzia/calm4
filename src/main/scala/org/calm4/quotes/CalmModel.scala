@@ -73,7 +73,7 @@ object CalmModel {
     case GetCourse(id) => loadPage(s"https://calm.dhamma.org/en/courses/$id/course_applications").map(CalmHtml)
     case GetParticipant(id, courseId) =>
       loadPage(s"https://calm.dhamma.org/en/courses/$courseId/course_applications/$id/edit").map(CalmHtml)
-    case GetInbox() => loadJson(CalmUri.inboxUri).map(parse(_).extract[DataJson]).map(CalmJson)
+    case GetInbox(s) => loadJson(CalmUri.inboxUri(s)).map(parse(_).extract[DataJson]).map(CalmJson)
     case GetSearchResult(s) =>
       loadJson(Uri("https://calm.dhamma.org/en/course_applications/search").withQuery(Query(Map("typeahead" -> s))))
         .map(parse(_).extract[DataJson]).map(CalmJson)
